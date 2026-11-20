@@ -1,0 +1,40 @@
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  resilience-suite:
+    runs-on: ubuntu-latest
+
+    services:
+      kafka:
+        image: apache/kafka:latest
+        ports:
+          - 9092:9092
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: 'maven'
+
+      - name: Wait for Kafka broker on port 9092
+        run: |
+          for i in {1..30}; do
+            if nc -z localhost 9092; then
+              echo "Kafka is ready!"
+              break
+            fi
+            echo "Waiting for Kafka..."
+            sleep 2
+          done
+
+      - name: Run full TestNG suite (Kafka + WireMock)
+        run: mvn -B clean test
