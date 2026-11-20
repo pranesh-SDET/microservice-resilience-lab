@@ -5,11 +5,11 @@
 [![Docker](https://img.shields.io/badge/Docker-KRaft-2496ED?style=for-the-badge&logo=docker&logoColor=white)](https://www.docker.com/)
 [![WireMock 3.13.2](https://img.shields.io/badge/WireMock-3.13.2-0FB2EF?style=for-the-badge)](https://wiremock.org/)
 [![TestNG 7.10.2](https://img.shields.io/badge/TestNG-7.10.2-DC382D?style=for-the-badge)](https://testng.org/)
-[![Tests Passing](https://img.shields.io/badge/Tests-7%2F7%20Passing-2EA44F?style=for-the-badge&logo=githubactions&logoColor=white)](#automated-test-matrix)
+[![CI](https://github.com/pranesh-SDET/microservice-resilience-lab/actions/workflows/java17-resilience-ci.yml/badge.svg)](https://github.com/pranesh-SDET/microservice-resilience-lab/actions/workflows/java17-resilience-ci.yml)
 
 A Java 17 distributed-systems QA lab verifying **asynchronous Kafka observability** and **synchronous microservice chaos resilience**—grounded in **Netflix ChAP (`arXiv:1905.04648`)** and **SequenceFI (`arXiv:2607.20050`)** temporal fault-injection research.
 
-> **Interactive Learning Hub (Read-Only):** Explore the clickable architecture diagram and play all 7 chaos scenarios live in your browser:
+> **Interactive Learning Hub (Read-Only):** Explore the clickable architecture diagram and step through all 7 tests as a read-only simulation in your browser:
 > [https://pranesh-SDET.github.io/microservice-resilience-lab/](https://pranesh-SDET.github.io/microservice-resilience-lab/) *(Enable GitHub Pages on `/docs` to activate)*
 
 ---
@@ -47,7 +47,7 @@ Most Kafka and microservice tutorials stop at the happy path—using `enable.aut
 
 ## Automated Test Matrix
 
-All 7 automated TestNG checks execute deterministically via `mvn clean test`:
+All 7 automated TestNG checks execute repeatably via `mvn clean test`:
 
 | Suite | Test Case | Fault / Scenario Tested | Key Assertion |
 | :--- | :--- | :--- | :--- |
@@ -67,7 +67,7 @@ All 7 automated TestNG checks execute deterministically via `mvn clean test`:
 microservice-resilience-lab/
 ├── .github/
 │   └── workflows/
-│       └── ci.yml                             # Automated CI pipeline (Java 17 + Maven + WireMock)
+│       └── java17-resilience-ci.yml           # Automated CI pipeline (Java 17 + Maven + WireMock)
 ├── docs/
 │   └── index.html                             # Read-only Interactive Learning Hub (GitHub Pages)
 ├── src/
@@ -144,7 +144,7 @@ Rolling execution logs are saved automatically to `logs/resilience-lab.log`.
 | **Netflix** | [*Automating Chaos Experiments in Production* (ChAP)](https://arxiv.org/abs/1905.04648) | Modeled latency-boundary testing (under vs. over client timeout) and automated steady-state assertions |
 | **SequenceFI (2026)** | [*Non-Intrusive Temporal Fault Injection*](https://arxiv.org/abs/2607.20050) | Inspired the 3 timing-sensitive payment failure windows (pre-effect, post-effect reply loss, downstream rejection) |
 | **Netflix** | [*Chaos Engineering* (IEEE Software)](https://arxiv.org/abs/1702.05843) | Applied steady-state hypothesis verification (`lag == 0`, `ledgerCommits == 1`, zero stuck partitions) |
-| **Uber (ICSE-SEIP '26)** | [*Scaling Mobile Chaos Testing with AI-Driven Execution* (uHavoc)](https://arxiv.org/abs/2602.06223) | Reinforced isolating downstream RPC failures cleanly across multi-service call chains |
+| **Uber** | [*Scaling Mobile Chaos Testing with AI-Driven Execution* (uHavoc)](https://arxiv.org/abs/2602.06223) | Reinforced isolating downstream RPC failures cleanly across multi-service call chains |
 
 ---
 

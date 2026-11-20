@@ -210,7 +210,7 @@ public class PaymentTemporalFaultInjectionTest {
 
     @Test
     public void testNetflixLatencyVariants_UnderAndOverClientTimeout() throws Exception {
-        // Variant A: Delay (150ms) under client timeout (400ms) -> No retry
+        // Variant A: Delay (150ms) under client timeout (1000ms) -> No retry
         String underKey = "evt-latency-under-401";
         wireMockServer.stubFor(post(urlEqualTo("/payments/charge"))
                 .withName(CHARGE_COMMIT_STUB_NAME)
@@ -228,7 +228,7 @@ public class PaymentTemporalFaultInjectionTest {
 
         wireMockServer.resetAll();
 
-        // Variant B: Delay (1400ms) over client timeout (400ms) -> Commits at k=1, times out, retries safely
+        // Variant B: Delay (1400ms) over client timeout (1000ms) -> Commits at k=1, times out, retries safely
         String overKey = "evt-latency-over-402";
         wireMockServer.stubFor(post(urlEqualTo("/payments/charge"))
                 .withName(CHARGE_COMMIT_STUB_NAME)
