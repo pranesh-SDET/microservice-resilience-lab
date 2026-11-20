@@ -1,0 +1,1705 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Week 2 Learning Hub — Microservice Resilience Lab</title>
+
+    <!-- Google Fonts: Inter for editorial clarity & JetBrains Mono for technical identifiers/logs -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        // Configure Tailwind with class-based dark mode and custom typography
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'ui-monospace', 'SFMono-Regular', 'monospace']
+                    }
+                }
+            }
+        };
+    </script>
+</head>
+<body class="bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100 font-sans antialiased transition-colors duration-300 selection:bg-indigo-500/20 selection:text-indigo-700 dark:selection:text-indigo-300">
+
+    <!-- ======================================================================= -->
+    <!-- 1. STICKY TOP HEADER BAR (Google Sites Editorial Navigation)            -->
+    <!-- ======================================================================= -->
+    <header class="sticky top-0 z-40 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 transition-colors duration-300">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16 gap-3">
+
+                <!-- Brand Identity & Live Showcase Badge -->
+                <a href="#overview" class="flex items-center gap-3 min-w-0 group">
+                    <div class="w-9 h-9 rounded-xl bg-indigo-600 dark:bg-indigo-500 text-white flex items-center justify-center shadow-sm shrink-0 group-hover:scale-105 transition-transform">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z"/>
+                        </svg>
+                    </div>
+                    <div class="flex flex-col sm:flex-row sm:items-center sm:gap-2.5 min-w-0">
+                        <span class="text-sm sm:text-base font-bold tracking-tight text-slate-900 dark:text-white truncate">
+                            Microservice Resilience Lab
+                        </span>
+                        <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-300 dark:border-emerald-500/30 w-fit">
+                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                            Week 2 · Live Learning Showcase
+                        </span>
+                    </div>
+                </a>
+
+                <!-- Desktop Smooth-Scroll Section Anchors -->
+                <nav class="hidden md:flex items-center gap-1 text-sm font-medium" aria-label="Primary navigation">
+                    <a href="#overview" class="px-3 py-2 rounded-lg text-slate-600 hover:text-indigo-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:text-indigo-400 dark:hover:bg-slate-800/70 transition-colors">Overview</a>
+                    <a href="#architecture" class="px-3 py-2 rounded-lg text-slate-600 hover:text-indigo-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:text-indigo-400 dark:hover:bg-slate-800/70 transition-colors">Architecture</a>
+                    <a href="#interactive-lab" class="px-3 py-2 rounded-lg text-slate-600 hover:text-indigo-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:text-indigo-400 dark:hover:bg-slate-800/70 transition-colors">Interactive Lab</a>
+                    <a href="#research-papers" class="px-3 py-2 rounded-lg text-slate-600 hover:text-indigo-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:text-indigo-400 dark:hover:bg-slate-800/70 transition-colors">Research Papers</a>
+                    <a href="#test-matrix" class="px-3 py-2 rounded-lg text-slate-600 hover:text-indigo-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:text-indigo-400 dark:hover:bg-slate-800/70 transition-colors">Test Matrix</a>
+                </nav>
+
+                <!-- Utility Controls: Theme Toggle & Mobile Menu Button -->
+                <div class="flex items-center gap-2 shrink-0">
+                    <button id="themeToggleBtn" type="button" onclick="toggleTheme()" aria-label="Toggle Light and Dark Mode"
+                        class="p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-amber-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors cursor-pointer">
+                        <!-- Sun icon (visible in dark mode) -->
+                        <svg id="sunIcon" class="w-4 h-4 hidden" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z"/>
+                        </svg>
+                        <!-- Moon icon (visible in light mode) -->
+                        <svg id="moonIcon" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z"/>
+                        </svg>
+                    </button>
+
+                    <!-- Mobile Navigation Toggle -->
+                    <button id="mobileMenuBtn" type="button" onclick="toggleMobileMenu()" aria-label="Open navigation menu"
+                        class="md:hidden p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors cursor-pointer">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Mobile Dropdown Links -->
+            <div id="mobileMenu" class="hidden md:hidden pb-4 pt-1 border-t border-slate-200 dark:border-slate-800">
+                <div class="grid grid-cols-2 gap-1.5 text-sm font-medium mt-2">
+                    <a href="#overview" onclick="closeMobileMenu()" class="px-3 py-2.5 rounded-lg text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800">Overview</a>
+                    <a href="#architecture" onclick="closeMobileMenu()" class="px-3 py-2.5 rounded-lg text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800">Architecture</a>
+                    <a href="#interactive-lab" onclick="closeMobileMenu()" class="px-3 py-2.5 rounded-lg text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800">Interactive Lab</a>
+                    <a href="#research-papers" onclick="closeMobileMenu()" class="px-3 py-2.5 rounded-lg text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800">Research Papers</a>
+                    <a href="#test-matrix" onclick="closeMobileMenu()" class="px-3 py-2.5 rounded-lg text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 col-span-2">Test Matrix</a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- ======================================================================= -->
+    <!-- MAIN EDITORIAL CONTENT CONTAINER                                        -->
+    <!-- ======================================================================= -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 space-y-16 sm:space-y-20">
+
+        <!-- =================================================================== -->
+        <!-- 2. HERO SECTION                                                     -->
+        <!-- =================================================================== -->
+        <section id="overview" class="scroll-mt-24">
+            <div class="rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm p-6 sm:p-10 lg:p-12">
+                <!-- Breadcrumb Pill -->
+                <div class="inline-flex flex-wrap items-center gap-2 px-3.5 py-1.5 rounded-full bg-indigo-50 dark:bg-indigo-500/10 border border-indigo-200/80 dark:border-indigo-500/30 text-xs font-semibold text-indigo-700 dark:text-indigo-300 mb-6">
+                    <span>Series: Distributed Systems QA</span>
+                    <span class="text-indigo-400">·</span>
+                    <span>Week 1 (Kafka)</span>
+                    <span class="text-indigo-500 font-bold">→</span>
+                    <span>Week 2 (Microservices Resilience)</span>
+                </div>
+
+                <!-- Headline & Concise Subtitle -->
+                <div class="max-w-4xl">
+                    <h1 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-slate-900 dark:text-white leading-tight">
+                        Testing Microservices Where They Actually Break:
+                        <span class="text-indigo-600 dark:text-indigo-400">Timing, Retries &amp; Sagas</span>
+                    </h1>
+                    <p class="mt-4 text-base sm:text-lg text-slate-600 dark:text-slate-300 leading-relaxed">
+                        Building directly on <strong class="font-semibold text-slate-900 dark:text-white">Week 1</strong> (Apache Kafka partitions, consumer lag draining, and Dead-Letter Topic quarantine), <strong class="font-semibold text-slate-900 dark:text-white">Week 2</strong> pushes into downstream HTTP microservice chaos. Using <span class="font-mono text-sm text-indigo-700 dark:text-indigo-300">Java 17</span> and <span class="font-mono text-sm text-indigo-700 dark:text-indigo-300">WireMock 3.13.2</span>, this lab verifies <strong class="font-semibold text-slate-900 dark:text-white">Netflix ChAP</strong> latency cutoffs, <strong class="font-semibold text-slate-900 dark:text-white">SequenceFI</strong> temporal failure windows, idempotent payment ledgers, and Saga refund compensation—fully automated with zero manual console guesswork.
+                    </p>
+                </div>
+
+                <!-- Action CTA Row -->
+                <div class="mt-7 flex flex-wrap items-center gap-3">
+                    <a href="#interactive-lab" class="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-400 text-white font-semibold text-sm shadow-sm transition-colors">
+                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                        Launch Interactive Chaos Lab
+                    </a>
+                    <a href="#architecture" class="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-100 font-semibold text-sm border border-slate-200 dark:border-slate-700 transition-colors">
+                        Inspect Architecture Nodes
+                    </a>
+                    <button type="button" onclick="window.print()" class="inline-flex items-center gap-2 px-4 py-3 rounded-xl bg-white hover:bg-slate-50 dark:bg-slate-900 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 font-medium text-sm border border-slate-200 dark:border-slate-700 transition-colors cursor-pointer">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6.72 13.829c-.24.03-.48.062-.72.096m.72-.096a42.415 42.415 0 0110.56 0m-10.56 0L6.34 18m10.94-4.171c.24.03.48.062.72.096m-.72-.096L17.66 18m0 0l.229 2.523a1.125 1.125 0 01-1.12 1.227H7.231c-.662 0-1.18-.568-1.12-1.227L6.34 18m11.318 0h1.091A2.25 2.25 0 0021 15.75V9.456c0-1.081-.768-2.015-1.837-2.175a48.055 48.055 0 00-1.913-.247M6.34 18H5.25A2.25 2.25 0 013 15.75V9.456c0-1.081.768-2.015 1.837-2.175a48.041 48.041 0 011.913-.247m10.5 0a48.536 48.536 0 00-10.5 0m10.5 0V3.375c0-.621-.504-1.125-1.125-1.125h-8.25c-.621 0-1.125.504-1.125 1.125v3.659M18 10.5h.008v.008H18V10.5zm-3 0h.008v.008H15V10.5z"/>
+                        </svg>
+                        Save / Print PDF
+                    </button>
+                </div>
+
+                <!-- 4 Crisp KPI Summary Tiles -->
+                <div class="mt-9 pt-8 border-t border-slate-200 dark:border-slate-800 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div class="rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/90 dark:border-slate-700/80 p-4">
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Suite Verification</span>
+                            <span class="px-2 py-0.5 text-[10px] font-mono font-bold rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300">BUILD SUCCESS</span>
+                        </div>
+                        <p class="mt-2 text-lg font-bold text-slate-900 dark:text-white">7/7 Automated Tests Passing</p>
+                        <p class="mt-0.5 text-xs text-slate-500 dark:text-slate-400">3 Kafka + 4 WireMock TestNG runs</p>
+                    </div>
+
+                    <div class="rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/90 dark:border-slate-700/80 p-4">
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Modern Runtime Stack</span>
+                            <span class="w-2 h-2 rounded-full bg-indigo-500"></span>
+                        </div>
+                        <p class="mt-2 text-lg font-bold text-slate-900 dark:text-white font-mono text-[15px] leading-7">Java 17 · Kafka 4.4 · WireMock 3.13</p>
+                        <p class="mt-0.5 text-xs text-slate-500 dark:text-slate-400">Log4j 2 + Jackson + Docker KRaft</p>
+                    </div>
+
+                    <div class="rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/90 dark:border-slate-700/80 p-4">
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Chaos Coverage</span>
+                            <span class="w-2 h-2 rounded-full bg-amber-500"></span>
+                        </div>
+                        <p class="mt-2 text-lg font-bold text-slate-900 dark:text-white">3 Failure Windows + 2 Latency Cutoffs</p>
+                        <p class="mt-0.5 text-xs text-slate-500 dark:text-slate-400">SequenceFI &amp; Netflix ChAP models</p>
+                    </div>
+
+                    <div class="rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/90 dark:border-slate-700/80 p-4">
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Async Determinism</span>
+                            <span class="w-2 h-2 rounded-full bg-cyan-500"></span>
+                        </div>
+                        <p class="mt-2 text-lg font-bold text-slate-900 dark:text-white">Zero Thread.sleep (Awaitility)</p>
+                        <p class="mt-0.5 text-xs text-slate-500 dark:text-slate-400">Live lag=0 &amp; DLT header polling</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- =================================================================== -->
+        <!-- 3. WEEK 1 → WEEK 2 PROGRESSION STRIP                                -->
+        <!-- =================================================================== -->
+        <section aria-labelledby="progression-heading">
+            <div class="mb-6">
+                <span class="text-xs font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">Learning Continuity</span>
+                <h2 id="progression-heading" class="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 dark:text-white mt-1">
+                    From Async Messaging (Week 1) to Microservice Chaos (Week 2)
+                </h2>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- Week 1 Card -->
+                <article class="rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 sm:p-7 shadow-sm flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center justify-between gap-2 mb-4">
+                            <span class="px-3 py-1 rounded-full text-xs font-bold bg-cyan-50 text-cyan-700 border border-cyan-200 dark:bg-cyan-500/10 dark:text-cyan-300 dark:border-cyan-500/30">
+                                WEEK 1 · FOUNDATION
+                            </span>
+                            <span class="text-xs font-mono text-slate-500 dark:text-slate-400">KafkaObservabilityTest</span>
+                        </div>
+                        <h3 class="text-xl font-bold text-slate-900 dark:text-white">Apache Kafka Async Backbone</h3>
+                        <p class="mt-2 text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
+                            Eliminated fragile tutorial defaults (auto-commit, single-partition bottlenecks, manual terminal checking) by building an observable Kafka client layer on Docker.
+                        </p>
+                        <ul class="mt-5 space-y-2.5 text-sm text-slate-700 dark:text-slate-300">
+                            <li class="flex items-start gap-2.5">
+                                <span class="mt-1 w-4 h-4 rounded-full bg-cyan-100 dark:bg-cyan-500/20 text-cyan-700 dark:text-cyan-300 flex items-center justify-center shrink-0 text-[10px] font-bold">✓</span>
+                                <span><strong>Docker Kafka Broker (port 9092):</strong> Multi-partition topics (3 partitions) with strict per-customer key stickiness (<span class="font-mono text-xs">cust-42</span>).</span>
+                            </li>
+                            <li class="flex items-start gap-2.5">
+                                <span class="mt-1 w-4 h-4 rounded-full bg-cyan-100 dark:bg-cyan-500/20 text-cyan-700 dark:text-cyan-300 flex items-center justify-center shrink-0 text-[10px] font-bold">✓</span>
+                                <span><strong>Manual <span class="font-mono text-xs">commitSync()</span> &amp; <span class="font-mono text-xs">acks=all</span>:</strong> Bookmarks move only after successful processing—never prematurely on a timer.</span>
+                            </li>
+                            <li class="flex items-start gap-2.5">
+                                <span class="mt-1 w-4 h-4 rounded-full bg-cyan-100 dark:bg-cyan-500/20 text-cyan-700 dark:text-cyan-300 flex items-center justify-center shrink-0 text-[10px] font-bold">✓</span>
+                                <span><strong>Poison-Pill DLT Isolation:</strong> Malformed JSON quarantined to <span class="font-mono text-xs">orders.DLT</span> with error headers while valid orders flow uninterrupted.</span>
+                            </li>
+                            <li class="flex items-start gap-2.5">
+                                <span class="mt-1 w-4 h-4 rounded-full bg-cyan-100 dark:bg-cyan-500/20 text-cyan-700 dark:text-cyan-300 flex items-center justify-center shrink-0 text-[10px] font-bold">✓</span>
+                                <span><strong>Automated Lag = 0 Proof:</strong> Admin API inspects live consumer group lag via Awaitility until every offset drains cleanly.</span>
+                            </li>
+                        </ul>
+                    </div>
+                </article>
+
+                <!-- Week 2 Card -->
+                <article class="rounded-2xl bg-white dark:bg-slate-900 border-2 border-indigo-200 dark:border-indigo-500/40 p-6 sm:p-7 shadow-sm flex flex-col justify-between relative">
+                    <div>
+                        <div class="flex items-center justify-between gap-2 mb-4">
+                            <span class="px-3 py-1 rounded-full text-xs font-bold bg-indigo-50 text-indigo-700 border border-indigo-200 dark:bg-indigo-500/15 dark:text-indigo-300 dark:border-indigo-500/40">
+                                WEEK 2 · CURRENT FOCUS
+                            </span>
+                            <span class="text-xs font-mono text-slate-500 dark:text-slate-400">PaymentTemporalFaultInjectionTest</span>
+                        </div>
+                        <h3 class="text-xl font-bold text-slate-900 dark:text-white">Downstream Microservice Chaos &amp; Sagas</h3>
+                        <p class="mt-2 text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
+                            Reading an event from Kafka is only half the journey—the consumer must call downstream HTTP Payment and Inventory services that drop sockets, stall, or reject stock.
+                        </p>
+                        <ul class="mt-5 space-y-2.5 text-sm text-slate-700 dark:text-slate-300">
+                            <li class="flex items-start gap-2.5">
+                                <span class="mt-1 w-4 h-4 rounded-full bg-indigo-100 dark:bg-indigo-500/20 text-indigo-700 dark:text-indigo-300 flex items-center justify-center shrink-0 text-[10px] font-bold">✓</span>
+                                <span><strong>WireMock 3.13.2 Fault Scenarios:</strong> Programmable Payment &amp; Inventory mocks inject <span class="font-mono text-xs">HTTP 503</span>, <span class="font-mono text-xs">CONNECTION_RESET_BY_PEER</span>, and <span class="font-mono text-xs">HTTP 409</span>.</span>
+                            </li>
+                            <li class="flex items-start gap-2.5">
+                                <span class="mt-1 w-4 h-4 rounded-full bg-indigo-100 dark:bg-indigo-500/20 text-indigo-700 dark:text-indigo-300 flex items-center justify-center shrink-0 text-[10px] font-bold">✓</span>
+                                <span><strong>Idempotency-Key Ledger Proof:</strong> Serve-event ledger counting mathematically guarantees at most <strong>1 payment commit</strong> even across retries.</span>
+                            </li>
+                            <li class="flex items-start gap-2.5">
+                                <span class="mt-1 w-4 h-4 rounded-full bg-indigo-100 dark:bg-indigo-500/20 text-indigo-700 dark:text-indigo-300 flex items-center justify-center shrink-0 text-[10px] font-bold">✓</span>
+                                <span><strong>Consumer <span class="font-mono text-xs">event_id</span> Deduplication &amp; Saga Refund:</strong> Blocks duplicate Kafka redeliveries and triggers <span class="font-mono text-xs">/payments/refund</span> + <span class="font-mono text-xs">orders-compensated</span> on 409 rejections.</span>
+                            </li>
+                            <li class="flex items-start gap-2.5">
+                                <span class="mt-1 w-4 h-4 rounded-full bg-indigo-100 dark:bg-indigo-500/20 text-indigo-700 dark:text-indigo-300 flex items-center justify-center shrink-0 text-[10px] font-bold">✓</span>
+                                <span><strong>Netflix ChAP Latency Boundaries:</strong> Proves <span class="font-mono text-xs">150ms</span> completes without retry while <span class="font-mono text-xs">1400ms</span> (&gt;1000ms timeout) recovers without double-billing.</span>
+                            </li>
+                        </ul>
+                    </div>
+                </article>
+            </div>
+        </section>
+
+        <!-- =================================================================== -->
+        <!-- 4. VISUAL END-TO-END ARCHITECTURE FLOW DIAGRAM (CLICKABLE NODES)    -->
+        <!-- =================================================================== -->
+        <section id="architecture" class="scroll-mt-24">
+            <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-3 mb-6">
+                <div>
+                    <span class="text-xs font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">System Blueprint</span>
+                    <h2 class="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 dark:text-white mt-1">
+                        Interactive End-to-End Architecture Flow
+                    </h2>
+                </div>
+                <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400">
+                    Click any component below to inspect its plain-English role and exact Java class in <span class="font-mono text-indigo-600 dark:text-indigo-400">com.resilience.lab</span>
+                </p>
+            </div>
+
+            <div class="rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm p-5 sm:p-8">
+                <!-- 5-Node Interactive Pipeline -->
+                <div class="grid grid-cols-1 md:grid-cols-5 gap-3 items-stretch" id="archNodeGrid">
+                    <!-- Populated via JavaScript for clean state management -->
+                </div>
+
+                <!-- Dynamic Node Inspector Drawer -->
+                <div id="archInspector" class="mt-6 rounded-2xl bg-slate-50 dark:bg-slate-950/80 border border-slate-200 dark:border-slate-800 p-5 sm:p-6 transition-all duration-300">
+                    <div class="flex flex-col lg:flex-row lg:items-start justify-between gap-4">
+                        <div class="space-y-2 max-w-3xl">
+                            <div class="flex flex-wrap items-center gap-2">
+                                <span id="inspLayerBadge" class="px-2.5 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-wider"></span>
+                                <span id="inspClassName" class="text-xs font-mono font-semibold text-indigo-700 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-500/10 px-2.5 py-0.5 rounded-md border border-indigo-200/70 dark:border-indigo-500/30"></span>
+                            </div>
+                            <h3 id="inspTitle" class="text-lg sm:text-xl font-bold text-slate-900 dark:text-white"></h3>
+                            <p id="inspLayman" class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed"></p>
+                        </div>
+
+                        <div class="lg:w-80 shrink-0 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-4">
+                            <div class="text-[11px] font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400 mb-1.5">
+                                Production Guardrail Implemented
+                            </div>
+                            <p id="inspGuardrail" class="text-xs font-mono text-slate-700 dark:text-slate-300 leading-relaxed"></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- =================================================================== -->
+        <!-- 5. INTERACTIVE VIEW-AND-PLAY CHAOS LAB (READ-ONLY SIMULATOR)        -->
+        <!-- =================================================================== -->
+        <section id="interactive-lab" class="scroll-mt-24">
+            <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-3 mb-6">
+                <div>
+                    <span class="text-xs font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">Read-Only Interactive Sandbox</span>
+                    <h2 class="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 dark:text-white mt-1">
+                        View-and-Play Chaos Lab (All 7 Automated Tests)
+                    </h2>
+                </div>
+                <span class="text-xs font-mono px-3 py-1.5 rounded-full bg-slate-200/70 dark:bg-slate-800 text-slate-700 dark:text-slate-300 w-fit">
+                    Select a scenario → Click Play or Step
+                </span>
+            </div>
+
+            <div class="rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+
+                <!-- Scenario Selector Tabs Bar -->
+                <div class="p-4 sm:p-6 bg-slate-50 dark:bg-slate-900/90 border-b border-slate-200 dark:border-slate-800 space-y-4">
+                    <!-- Group 1: Kafka Observability -->
+                    <div>
+                        <div class="text-[11px] font-bold uppercase tracking-wider text-cyan-700 dark:text-cyan-400 mb-2">
+                            Week 1 · Kafka Observability Suite (Docker Broker :9092)
+                        </div>
+                        <div id="simTabsGroupA" class="flex flex-wrap gap-2"></div>
+                    </div>
+                    <!-- Group 2: Payment Temporal Fault Injection -->
+                    <div>
+                        <div class="text-[11px] font-bold uppercase tracking-wider text-indigo-700 dark:text-indigo-400 mb-2">
+                            Week 2 · Payment Temporal Fault Injection Suite (WireMock 3.13.2)
+                        </div>
+                        <div id="simTabsGroupB" class="flex flex-wrap gap-2"></div>
+                    </div>
+                </div>
+
+                <!-- Simulator Action Toolbar & Progress Bar -->
+                <div class="px-4 sm:px-6 py-4 border-b border-slate-200 dark:border-slate-800 flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-white dark:bg-slate-900">
+                    <div class="min-w-0">
+                        <div class="flex flex-wrap items-center gap-2">
+                            <span id="simBadge" class="px-2.5 py-0.5 rounded-md text-[11px] font-mono font-bold bg-indigo-100 text-indigo-700 dark:bg-indigo-500/20 dark:text-indigo-300">SCENARIO 1</span>
+                            <h3 id="simTitle" class="text-base font-bold text-slate-900 dark:text-white truncate"></h3>
+                        </div>
+                        <p id="simSubtitle" class="text-xs font-mono text-slate-500 dark:text-slate-400 mt-1 truncate"></p>
+                    </div>
+
+                    <!-- Play / Step / Reset Buttons -->
+                    <div class="flex flex-wrap items-center gap-2.5 shrink-0">
+                        <button id="playBtn" type="button" onclick="playScenario()"
+                            class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-400 text-white font-semibold text-xs shadow-sm transition-colors cursor-pointer">
+                            <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                            <span id="playBtnLabel">Play</span>
+                        </button>
+                        <button id="stepBtn" type="button" onclick="stepScenario()"
+                            class="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-500/15 dark:hover:bg-emerald-500/25 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-500/30 font-semibold text-xs transition-colors cursor-pointer">
+                            <span>Step</span>
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
+                            </svg>
+                        </button>
+                        <button id="resetBtn" type="button" onclick="resetSimulator(true)"
+                            class="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 font-semibold text-xs transition-colors cursor-pointer">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                            </svg>
+                            <span>Reset</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Live Metrics Strip + Step Callout -->
+                <div class="p-4 sm:p-6 space-y-5">
+                    <!-- Active Step Narrative Banner -->
+                    <div class="rounded-xl bg-slate-50 dark:bg-slate-950/70 border border-slate-200 dark:border-slate-800 px-4 py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                        <div class="flex items-center gap-2.5 text-xs sm:text-sm font-medium text-slate-800 dark:text-slate-200">
+                            <span id="stepDot" class="w-2.5 h-2.5 rounded-full bg-slate-400 shrink-0"></span>
+                            <span id="stepBannerText">Press Play or Step to animate packet flow across Kafka &amp; WireMock.</span>
+                        </div>
+                        <span id="stepCounter" class="text-xs font-mono font-semibold text-slate-500 dark:text-slate-400 shrink-0">Step 0 / 0</span>
+                    </div>
+
+                    <!-- Progress Bar -->
+                    <div class="w-full h-1.5 rounded-full bg-slate-200 dark:bg-slate-800 overflow-hidden">
+                        <div id="simProgressFill" class="h-full w-0 rounded-full bg-indigo-600 dark:bg-indigo-400 transition-all duration-300"></div>
+                    </div>
+
+                    <!-- 4 Live Telemetry Counters -->
+                    <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
+                        <div class="rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/80 p-3.5">
+                            <div class="flex items-center justify-between">
+                                <span class="text-xs font-medium text-slate-500 dark:text-slate-400">Ledger Commits</span>
+                                <span class="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300">MAX 1</span>
+                            </div>
+                            <div id="cntLedger" class="mt-1 text-2xl font-mono font-bold text-emerald-600 dark:text-emerald-400">0</div>
+                        </div>
+
+                        <div class="rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/80 p-3.5">
+                            <div class="flex items-center justify-between">
+                                <span class="text-xs font-medium text-slate-500 dark:text-slate-400">Consumer Lag</span>
+                                <span class="w-2 h-2 rounded-full bg-cyan-500"></span>
+                            </div>
+                            <div id="cntLag" class="mt-1 text-2xl font-mono font-bold text-cyan-600 dark:text-cyan-400">0</div>
+                        </div>
+
+                        <div class="rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/80 p-3.5">
+                            <div class="flex items-center justify-between">
+                                <span class="text-xs font-medium text-slate-500 dark:text-slate-400">DLT Quarantined</span>
+                                <span class="w-2 h-2 rounded-full bg-rose-500"></span>
+                            </div>
+                            <div id="cntDlt" class="mt-1 text-2xl font-mono font-bold text-rose-600 dark:text-rose-400">0</div>
+                        </div>
+
+                        <div class="rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/80 p-3.5">
+                            <div class="flex items-center justify-between">
+                                <span class="text-xs font-medium text-slate-500 dark:text-slate-400">HTTP Calls</span>
+                                <span class="w-2 h-2 rounded-full bg-amber-500"></span>
+                            </div>
+                            <div id="cntHttp" class="mt-1 text-2xl font-mono font-bold text-amber-600 dark:text-amber-400">0</div>
+                        </div>
+                    </div>
+
+                    <!-- Live Animated Packet Stage (4 Connected Microservice Stages) -->
+                    <div class="grid grid-cols-1 lg:grid-cols-4 gap-3.5 items-stretch">
+                        <!-- Stage 1: Producer -->
+                        <div id="stageProducer" class="rounded-2xl bg-slate-50 dark:bg-slate-950/70 border border-slate-200 dark:border-slate-800 p-4 transition-all duration-300 flex flex-col justify-between gap-3">
+                            <div>
+                                <div class="flex items-center justify-between gap-2 mb-1">
+                                    <span class="text-xs font-bold text-slate-900 dark:text-white">1. Order Producer</span>
+                                    <span class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-cyan-100 text-cyan-700 dark:bg-cyan-500/20 dark:text-cyan-300">acks=all</span>
+                                </div>
+                                <div class="text-[11px] font-mono text-slate-500 dark:text-slate-400">ResilientProducerHandler</div>
+                            </div>
+                            <div id="stageProducerBody" class="rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-2.5 text-[11px] font-mono text-slate-500 dark:text-slate-400 min-h-[58px] break-all">
+                                Awaiting event publish...
+                            </div>
+                        </div>
+
+                        <!-- Stage 2: Docker Kafka Broker -->
+                        <div id="stageKafka" class="rounded-2xl bg-slate-50 dark:bg-slate-950/70 border border-slate-200 dark:border-slate-800 p-4 transition-all duration-300 flex flex-col justify-between gap-2.5">
+                            <div class="flex items-center justify-between gap-1">
+                                <span class="text-xs font-bold text-slate-900 dark:text-white">2. Docker Kafka</span>
+                                <span class="text-[10px] font-mono text-cyan-700 dark:text-cyan-300">:9092</span>
+                            </div>
+                            <!-- Partitions P0..P2 -->
+                            <div class="space-y-1.5 text-[10px] font-mono">
+                                <div class="flex items-center gap-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg px-2 py-1 min-h-[26px]">
+                                    <span class="font-bold text-slate-400 w-5 shrink-0">P0</span>
+                                    <div id="laneP0" class="flex flex-wrap gap-1 text-slate-400">—</div>
+                                </div>
+                                <div class="flex items-center gap-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg px-2 py-1 min-h-[26px]">
+                                    <span class="font-bold text-slate-400 w-5 shrink-0">P1</span>
+                                    <div id="laneP1" class="flex flex-wrap gap-1 text-slate-400">—</div>
+                                </div>
+                                <div class="flex items-center gap-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg px-2 py-1 min-h-[26px]">
+                                    <span class="font-bold text-slate-400 w-5 shrink-0">P2</span>
+                                    <div id="laneP2" class="flex flex-wrap gap-1 text-slate-400">—</div>
+                                </div>
+                            </div>
+                            <!-- DLT & Compensation Pill Tray -->
+                            <div class="grid grid-cols-2 gap-1.5 text-[10px] font-mono">
+                                <div id="boxDlt" class="rounded-lg bg-rose-50 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-500/30 px-2 py-1 text-rose-700 dark:text-rose-300 truncate">
+                                    .DLT: empty
+                                </div>
+                                <div id="boxComp" class="rounded-lg bg-violet-50 dark:bg-violet-950/30 border border-violet-200 dark:border-violet-500/30 px-2 py-1 text-violet-700 dark:text-violet-300 truncate">
+                                    Saga: 0
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Stage 3: ManualCommitConsumer -->
+                        <div id="stageConsumer" class="rounded-2xl bg-slate-50 dark:bg-slate-950/70 border border-slate-200 dark:border-slate-800 p-4 transition-all duration-300 flex flex-col justify-between gap-2.5">
+                            <div>
+                                <div class="flex items-center justify-between gap-1 mb-1">
+                                    <span class="text-xs font-bold text-slate-900 dark:text-white">3. Order Consumer</span>
+                                    <span id="stageConsumerBadge" class="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-300">IDLE</span>
+                                </div>
+                                <div class="text-[11px] font-mono text-slate-500 dark:text-slate-400">commitSync() + Dedup</div>
+                            </div>
+                            <div class="rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-2.5 space-y-1.5">
+                                <div class="text-[10px] font-mono text-slate-400">seenEventIds cache:</div>
+                                <div id="stageDedupList" class="flex flex-wrap gap-1 min-h-[22px] text-[10px] font-mono text-slate-400">
+                                    empty []
+                                </div>
+                                <div id="stageCommitNote" class="text-[10px] font-mono text-slate-500 dark:text-slate-400 pt-1 border-t border-slate-100 dark:border-slate-800">
+                                    offset: —
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Stage 4: Downstream Microservices (WireMock 3.13.2) -->
+                        <div id="stageWiremock" class="rounded-2xl bg-slate-50 dark:bg-slate-950/70 border border-slate-200 dark:border-slate-800 p-4 transition-all duration-300 flex flex-col justify-between gap-2.5">
+                            <div class="flex items-center justify-between gap-1">
+                                <span class="text-xs font-bold text-slate-900 dark:text-white">4. WireMock Services</span>
+                                <span id="stageWmState" class="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-300">STARTED</span>
+                            </div>
+                            <div class="space-y-1.5 text-[11px] font-mono">
+                                <div class="rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-2">
+                                    <div class="text-[10px] text-slate-400">Payment (/charge · /refund)</div>
+                                    <div id="stagePaymentText" class="text-slate-600 dark:text-slate-300 mt-0.5">Awaiting HTTP POST</div>
+                                </div>
+                                <div class="rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-2">
+                                    <div class="text-[10px] text-slate-400">Inventory (/reserve)</div>
+                                    <div id="stageInventoryText" class="text-slate-600 dark:text-slate-300 mt-0.5">Idle</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Netflix ChAP Latency Cutoff Gauge (Revealed for Scenario 7) -->
+                    <div id="latencyGaugeBox" class="hidden rounded-2xl bg-amber-50/70 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-500/30 p-4 space-y-3">
+                        <div class="flex flex-wrap items-center justify-between gap-2">
+                            <span class="text-xs font-bold text-amber-900 dark:text-amber-300">Netflix ChAP Latency Cutoff Comparison</span>
+                            <span class="text-xs font-mono font-bold text-rose-600 dark:text-rose-400">CLIENT_TIMEOUT = 1000ms</span>
+                        </div>
+                        <div class="space-y-2.5">
+                            <div>
+                                <div class="flex justify-between text-[11px] font-mono mb-1">
+                                    <span class="text-slate-700 dark:text-slate-300">Variant A · 150ms delay (&lt; 1000ms timeout)</span>
+                                    <span id="latTextA" class="text-slate-500">Pending</span>
+                                </div>
+                                <div class="relative h-3 rounded-full bg-slate-200 dark:bg-slate-800 overflow-hidden">
+                                    <div class="absolute inset-y-0 left-[66.6%] w-0.5 bg-rose-500 z-10"></div>
+                                    <div id="latFillA" class="h-full w-0 bg-emerald-500 rounded-full transition-all duration-500"></div>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="flex justify-between text-[11px] font-mono mb-1">
+                                    <span class="text-slate-700 dark:text-slate-300">Variant B · 1400ms delay (&gt; 1000ms timeout → idempotent replay)</span>
+                                    <span id="latTextB" class="text-slate-500">Pending</span>
+                                </div>
+                                <div class="relative h-3 rounded-full bg-slate-200 dark:bg-slate-800 overflow-hidden">
+                                    <div class="absolute inset-y-0 left-[66.6%] w-0.5 bg-rose-500 z-10"></div>
+                                    <div id="latFillB" class="h-full w-0 bg-rose-500 rounded-full transition-all duration-700"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Live Assertions + Log4j 2 Console Split -->
+                    <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
+                        <!-- TestNG + Awaitility Assertion Checklist -->
+                        <div class="lg:col-span-5 rounded-2xl bg-slate-50 dark:bg-slate-950/70 border border-slate-200 dark:border-slate-800 p-4 flex flex-col justify-between">
+                            <div>
+                                <div class="flex items-center justify-between gap-2 mb-3">
+                                    <span class="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">TestNG + Awaitility Proof</span>
+                                    <span id="simResultBadge" class="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400">READY</span>
+                                </div>
+                                <div id="simAssertions" class="space-y-2"></div>
+                            </div>
+                            <p id="simTakeaway" class="mt-4 pt-3 border-t border-slate-200 dark:border-slate-800 text-xs text-slate-600 dark:text-slate-400 leading-relaxed"></p>
+                        </div>
+
+                        <!-- Clean Log4j 2 Console Feed -->
+                        <div class="lg:col-span-7 rounded-2xl bg-slate-900 border border-slate-800 overflow-hidden flex flex-col">
+                            <div class="px-4 py-2.5 bg-slate-950/80 border-b border-slate-800 flex items-center justify-between">
+                                <div class="flex items-center gap-2">
+                                    <span class="w-2.5 h-2.5 rounded-full bg-rose-500/80"></span>
+                                    <span class="w-2.5 h-2.5 rounded-full bg-amber-500/80"></span>
+                                    <span class="w-2.5 h-2.5 rounded-full bg-emerald-500/80"></span>
+                                    <span class="ml-1 text-xs font-mono text-slate-300">log4j2.xml · Harness Console</span>
+                                </div>
+                                <button type="button" onclick="copyConsoleOutput()"
+                                    class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-[11px] font-mono text-slate-200 border border-slate-700 transition-colors cursor-pointer">
+                                    Copy Log
+                                </button>
+                            </div>
+                            <div id="simConsole" class="p-4 font-mono text-[11.5px] leading-relaxed h-60 overflow-y-auto space-y-1.5 text-slate-300">
+                                <div class="text-slate-500">// Clean Log4j 2 output will stream here (org.apache.kafka muted at WARN)...</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- =================================================================== -->
+        <!-- 6. RESEARCH FOUNDATIONS SECTION ("Why Netflix ChAP & SequenceFI?")  -->
+        <!-- =================================================================== -->
+        <section id="research-papers" class="scroll-mt-24">
+            <div class="mb-6">
+                <span class="text-xs font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">Academic &amp; Industry Rigor</span>
+                <h2 class="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 dark:text-white mt-1">
+                    Why Netflix ChAP &amp; SequenceFI Shaped This Lab
+                </h2>
+                <p class="mt-2 text-sm sm:text-base text-slate-600 dark:text-slate-300 max-w-3xl">
+                    Instead of inventing ad-hoc negative tests, every fault scenario in <span class="font-mono text-indigo-600 dark:text-indigo-400">microservice-resilience-lab</span> maps directly to peer-reviewed chaos engineering research.
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- Netflix ChAP Card -->
+                <article class="rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 sm:p-7 shadow-sm flex flex-col justify-between gap-5">
+                    <div>
+                        <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+                            <span class="px-2.5 py-1 rounded-full text-xs font-bold bg-amber-50 text-amber-800 border border-amber-200 dark:bg-amber-500/15 dark:text-amber-300 dark:border-amber-500/30">
+                                Netflix Chaos Automation Platform
+                            </span>
+                            <span class="text-xs font-mono text-slate-500 dark:text-slate-400">arXiv:1905.04648</span>
+                        </div>
+                        <h3 class="text-xl font-bold text-slate-900 dark:text-white">
+                            Automating Chaos Experiments in Production (Basiri et al.)
+                        </h3>
+                        <p class="mt-3 text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
+                            Netflix demonstrated that happy-path integration tests hide broken fallbacks and misconfigured timeouts. Their <strong>ChAP</strong> platform automatically splits <strong>1% baseline vs. 1% canary</strong> traffic, injects controlled RPC latency or failures, and validates steady-state KPIs continuously.
+                        </p>
+                        <div class="mt-4 rounded-xl bg-slate-50 dark:bg-slate-950/70 border border-slate-200 dark:border-slate-800 p-4">
+                            <div class="text-xs font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400 mb-1.5">
+                                How We Applied It in WireMock
+                            </div>
+                            <p class="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
+                                In <span class="font-mono text-xs text-slate-800 dark:text-slate-200">testNetflixLatencyVariants_UnderAndOverClientTimeout</span>, we benchmark both sides of our <span class="font-mono text-xs">1000ms</span> client timeout: an under-timeout <span class="font-mono text-xs">150ms</span> delay completes with zero retries, while an over-timeout <span class="font-mono text-xs">1400ms</span> spike proves safe idempotent replay with only <strong>1 ledger commit</strong>.
+                            </p>
+                        </div>
+                    </div>
+                    <div>
+                        <a href="https://arxiv.org/abs/1905.04648" target="_blank" rel="noopener noreferrer"
+                            class="inline-flex items-center gap-2 text-sm font-semibold text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300 transition-colors">
+                            <span>Read Paper on arXiv (1905.04648)</span>
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25"/>
+                            </svg>
+                        </a>
+                    </div>
+                </article>
+
+                <!-- SequenceFI Card -->
+                <article class="rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 sm:p-7 shadow-sm flex flex-col justify-between gap-5">
+                    <div>
+                        <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+                            <span class="px-2.5 py-1 rounded-full text-xs font-bold bg-violet-50 text-violet-800 border border-violet-200 dark:bg-violet-500/15 dark:text-violet-300 dark:border-violet-500/30">
+                                Temporal Fault Injection
+                            </span>
+                            <span class="text-xs font-mono text-slate-500 dark:text-slate-400">arXiv:2607.20050</span>
+                        </div>
+                        <h3 class="text-xl font-bold text-slate-900 dark:text-white">
+                            SequenceFI: Non-Intrusive Temporal Fault Injection
+                        </h3>
+                        <p class="mt-3 text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
+                            SequenceFI reveals why <strong>fault timing</strong> matters far more than <strong>fault type</strong> in distributed workflows. A crash <em>before</em> a database write is harmlessly retried, whereas dropping a reply <em>after</em> a commit triggers double charges unless idempotency and Saga rollbacks are verified explicitly.
+                        </p>
+                        <div class="mt-4 rounded-xl bg-slate-50 dark:bg-slate-950/70 border border-slate-200 dark:border-slate-800 p-4">
+                            <div class="text-xs font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400 mb-1.5">
+                                How We Applied It Across 3 Payment Windows
+                            </div>
+                            <p class="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
+                                Using WireMock stateful scenarios (<span class="font-mono text-xs">STARTED → CHARGED</span>), we isolate <strong>Window 1</strong> (pre-effect 503), <strong>Window 2</strong> (post-effect <span class="font-mono text-xs">CONNECTION_RESET_BY_PEER</span>), and <strong>Window 3</strong> (downstream 409 out-of-stock → Saga refund), mathematically proving ledger integrity via <span class="font-mono text-xs">countLedgerCommits() == 1</span>.
+                            </p>
+                        </div>
+                    </div>
+                    <div>
+                        <a href="https://arxiv.org/abs/2607.20050" target="_blank" rel="noopener noreferrer"
+                            class="inline-flex items-center gap-2 text-sm font-semibold text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300 transition-colors">
+                            <span>Read Paper on arXiv (2607.20050)</span>
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25"/>
+                            </svg>
+                        </a>
+                    </div>
+                </article>
+            </div>
+        </section>
+
+        <!-- =================================================================== -->
+        <!-- 7. AUTOMATED TEST MATRIX & TECH STACK TABLE                         -->
+        <!-- =================================================================== -->
+        <section id="test-matrix" class="scroll-mt-24">
+            <div class="mb-6">
+                <span class="text-xs font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">Verification Ledger</span>
+                <h2 class="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 dark:text-white mt-1">
+                    Automated TestNG Matrix &amp; Engineering Stack
+                </h2>
+            </div>
+
+            <div class="rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-slate-50 dark:bg-slate-950/70 border-b border-slate-200 dark:border-slate-800 text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                                <th class="py-3.5 px-5">Test Method</th>
+                                <th class="py-3.5 px-5">Failure / Behavior Simulated</th>
+                                <th class="py-3.5 px-5">Resilience Mechanism Verified</th>
+                                <th class="py-3.5 px-5 text-right">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-200 dark:divide-slate-800 text-sm">
+                            <tr class="hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-colors">
+                                <td class="py-4 px-5">
+                                    <div class="font-mono text-xs font-semibold text-indigo-700 dark:text-indigo-300">testPartitionKeyStickinessAndOffsetOrdering</div>
+                                    <div class="text-[11px] text-slate-500 mt-0.5">KafkaObservabilityTest</div>
+                                </td>
+                                <td class="py-4 px-5 text-slate-600 dark:text-slate-300">5 sequential events for <span class="font-mono text-xs">cust-42</span> across 3 partitions</td>
+                                <td class="py-4 px-5 text-slate-700 dark:text-slate-200">Hash-key partition affinity &amp; ascending offsets (0..4)</td>
+                                <td class="py-4 px-5 text-right"><span class="px-2.5 py-1 rounded-full text-xs font-mono font-bold bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300">PASS</span></td>
+                            </tr>
+                            <tr class="hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-colors">
+                                <td class="py-4 px-5">
+                                    <div class="font-mono text-xs font-semibold text-indigo-700 dark:text-indigo-300">testConsumerLagDrainsToZeroAndDeduplicatesEvents</div>
+                                    <div class="text-[11px] text-slate-500 mt-0.5">KafkaObservabilityTest</div>
+                                </td>
+                                <td class="py-4 px-5 text-slate-600 dark:text-slate-300">At-least-once duplicate <span class="font-mono text-xs">evt-dup-1</span> delivery</td>
+                                <td class="py-4 px-5 text-slate-700 dark:text-slate-200">Manual <span class="font-mono text-xs">commitSync()</span>, consumer dedup (2 unique), Admin lag == 0</td>
+                                <td class="py-4 px-5 text-right"><span class="px-2.5 py-1 rounded-full text-xs font-mono font-bold bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300">PASS</span></td>
+                            </tr>
+                            <tr class="hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-colors">
+                                <td class="py-4 px-5">
+                                    <div class="font-mono text-xs font-semibold text-indigo-700 dark:text-indigo-300">testPoisonPillIsolatedToDeadLetterTopic</div>
+                                    <div class="text-[11px] text-slate-500 mt-0.5">KafkaObservabilityTest</div>
+                                </td>
+                                <td class="py-4 px-5 text-slate-600 dark:text-slate-300">Malformed JSON (<span class="font-mono text-xs">JsonParseException</span>) mid-partition</td>
+                                <td class="py-4 px-5 text-slate-700 dark:text-slate-200">Dead-Letter Topic routing (<span class="font-mono text-xs">.DLT</span> + error headers) &amp; lane continuity</td>
+                                <td class="py-4 px-5 text-right"><span class="px-2.5 py-1 rounded-full text-xs font-mono font-bold bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300">PASS</span></td>
+                            </tr>
+                            <tr class="hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-colors">
+                                <td class="py-4 px-5">
+                                    <div class="font-mono text-xs font-semibold text-indigo-700 dark:text-indigo-300">testWindow1_FailureBeforeSideEffect_PlainRetrySucceedsOnce</div>
+                                    <div class="text-[11px] text-slate-500 mt-0.5">PaymentTemporalFaultInjectionTest</div>
+                                </td>
+                                <td class="py-4 px-5 text-slate-600 dark:text-slate-300">Pre-commit <span class="font-mono text-xs">HTTP 503</span> before payment ledger write</td>
+                                <td class="py-4 px-5 text-slate-700 dark:text-slate-200">Safe retry recovery (2 HTTP attempts, 1 ledger commit)</td>
+                                <td class="py-4 px-5 text-right"><span class="px-2.5 py-1 rounded-full text-xs font-mono font-bold bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300">PASS</span></td>
+                            </tr>
+                            <tr class="hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-colors">
+                                <td class="py-4 px-5">
+                                    <div class="font-mono text-xs font-semibold text-indigo-700 dark:text-indigo-300">testWindow2_FailureAfterCommitReplyLost_IdempotentRetryAndConsumerDedup</div>
+                                    <div class="text-[11px] text-slate-500 mt-0.5">PaymentTemporalFaultInjectionTest</div>
+                                </td>
+                                <td class="py-4 px-5 text-slate-600 dark:text-slate-300">Post-commit <span class="font-mono text-xs">CONNECTION_RESET_BY_PEER</span> + duplicate event</td>
+                                <td class="py-4 px-5 text-slate-700 dark:text-slate-200"><span class="font-mono text-xs">Idempotency-Key</span> replay + consumer dedup (Ledger strictly == 1)</td>
+                                <td class="py-4 px-5 text-right"><span class="px-2.5 py-1 rounded-full text-xs font-mono font-bold bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300">PASS</span></td>
+                            </tr>
+                            <tr class="hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-colors">
+                                <td class="py-4 px-5">
+                                    <div class="font-mono text-xs font-semibold text-indigo-700 dark:text-indigo-300">testWindow3_DownstreamRejectionAfterCharge_SagaCompensatesWithoutRetryingRejection</div>
+                                    <div class="text-[11px] text-slate-500 mt-0.5">PaymentTemporalFaultInjectionTest</div>
+                                </td>
+                                <td class="py-4 px-5 text-slate-600 dark:text-slate-300">Inventory <span class="font-mono text-xs">HTTP 409 OUT_OF_STOCK</span> after charge</td>
+                                <td class="py-4 px-5 text-slate-700 dark:text-slate-200">Zero 4xx retries + Saga <span class="font-mono text-xs">/payments/refund</span> + <span class="font-mono text-xs">orders-compensated</span></td>
+                                <td class="py-4 px-5 text-right"><span class="px-2.5 py-1 rounded-full text-xs font-mono font-bold bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300">PASS</span></td>
+                            </tr>
+                            <tr class="hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-colors">
+                                <td class="py-4 px-5">
+                                    <div class="font-mono text-xs font-semibold text-indigo-700 dark:text-indigo-300">testNetflixLatencyVariants_UnderAndOverClientTimeout</div>
+                                    <div class="text-[11px] text-slate-500 mt-0.5">PaymentTemporalFaultInjectionTest</div>
+                                </td>
+                                <td class="py-4 px-5 text-slate-600 dark:text-slate-300">150ms (&lt;1000ms) vs 1400ms (&gt;1000ms) fixed latency</td>
+                                <td class="py-4 px-5 text-slate-700 dark:text-slate-200">Zero spurious retries under cutoff; safe replay over cutoff (Ledger == 1)</td>
+                                <td class="py-4 px-5 text-right"><span class="px-2.5 py-1 rounded-full text-xs font-mono font-bold bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300">PASS</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Engineering Stack Pills Strip -->
+                <div class="px-5 py-4 bg-slate-50 dark:bg-slate-950/70 border-t border-slate-200 dark:border-slate-800 flex flex-wrap items-center gap-2">
+                    <span class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mr-2">Tech Stack:</span>
+                    <span class="px-2.5 py-1 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-xs font-mono text-slate-700 dark:text-slate-200">Java 17</span>
+                    <span class="px-2.5 py-1 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-xs font-mono text-slate-700 dark:text-slate-200">Apache Kafka 4.4.0</span>
+                    <span class="px-2.5 py-1 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-xs font-mono text-slate-700 dark:text-slate-200">WireMock 3.13.2</span>
+                    <span class="px-2.5 py-1 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-xs font-mono text-slate-700 dark:text-slate-200">TestNG 7.10.2</span>
+                    <span class="px-2.5 py-1 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-xs font-mono text-slate-700 dark:text-slate-200">Awaitility 4.3.0</span>
+                    <span class="px-2.5 py-1 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-xs font-mono text-slate-700 dark:text-slate-200">Jackson 2.18.2</span>
+                    <span class="px-2.5 py-1 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-xs font-mono text-slate-700 dark:text-slate-200">Log4j 2.26.1</span>
+                    <span class="px-2.5 py-1 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-xs font-mono text-slate-700 dark:text-slate-200">Docker</span>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- ======================================================================= -->
+    <!-- 8. CLEAN PORTFOLIO FOOTER                                               -->
+    <!-- ======================================================================= -->
+    <footer class="mt-12 border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 transition-colors duration-300">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 text-sm text-slate-500 dark:text-slate-400">
+            <div>
+                <p class="font-semibold text-slate-800 dark:text-slate-200">
+                    Week 2 Learning Hub — <span class="font-mono text-indigo-600 dark:text-indigo-400">microservice-resilience-lab</span>
+                </p>
+                <p class="text-xs mt-1">
+                    Built with Java 17, Apache Kafka 4.4, WireMock 3.13.2, TestNG, Awaitility &amp; Docker.
+                </p>
+            </div>
+            <div class="flex flex-wrap items-center gap-3 text-xs">
+                <span class="px-3 py-1.5 rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 font-medium">
+                    Ready for GitHub Pages Hosting (/docs/index.html)
+                </span>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Toast Notification Banner (No alert() used) -->
+    <div id="toastBanner" role="status" aria-live="polite"
+        class="fixed bottom-5 right-5 z-50 hidden px-4 py-2.5 rounded-xl bg-slate-900 dark:bg-emerald-600 text-white text-xs font-mono shadow-lg border border-slate-700 dark:border-emerald-400">
+        Copied Log4j 2 output to clipboard
+    </div>
+
+    <!-- ======================================================================= -->
+    <!-- APPLICATION LOGIC (ARCHITECTURE INSPECTOR + 7-SCENARIO CHAOS SIMULATOR) -->
+    <!-- ======================================================================= -->
+    <script>
+        /* =====================================================================
+         * 1. ARCHITECTURE FLOW NODE METADATA (CLICKABLE INSPECTOR)
+         * ===================================================================*/
+        const ARCH_NODES = [
+            {
+                id: 'producer',
+                step: '01',
+                title: 'Order Producer',
+                subtitle: 'Async Event Writer',
+                layer: 'Async Ingestion',
+                layerStyle: 'bg-cyan-100 text-cyan-800 dark:bg-cyan-500/20 dark:text-cyan-300',
+                javaClass: 'com.resilience.lab.handlers.ResilientProducerHandler',
+                layman: 'Acts like a certified mail clerk. Instead of tossing order slips into Kafka and walking away, it stamps each JSON OrderEvent with a customerId key (for partition stickiness) and waits for broker confirmation before moving on.',
+                guardrail: 'acks=all + enable.idempotence=true + sendSync() returning RecordMetadata (topic, partition, offset).'
+            },
+            {
+                id: 'kafka',
+                step: '02',
+                title: 'Docker Kafka Broker',
+                subtitle: '3 Partitions + .DLT',
+                layer: 'Durable Event Backbone',
+                layerStyle: 'bg-sky-100 text-sky-800 dark:bg-sky-500/20 dark:text-sky-300',
+                javaClass: 'com.resilience.lab.helper.TopicAdminHelper',
+                layman: 'A portable, containerized Kafka server on localhost:9092 acting as an append-only ledger split into 3 parallel lanes (partitions). It decouples producers from consumers and exposes live end-offsets so tests can measure exact Consumer Lag.',
+                guardrail: 'try-with-resources Admin client, multi-partition topic creation, and getConsumerGroupLag() observability.'
+            },
+            {
+                id: 'consumer',
+                step: '03',
+                title: 'ManualCommitConsumer',
+                subtitle: 'Poll → Process → Commit',
+                layer: 'Resilient Event Reader',
+                layerStyle: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-500/20 dark:text-emerald-300',
+                javaClass: 'ManualCommitConsumerHandler + DeadLetterHandler',
+                layman: 'Reads orders carefully without an auto-moving bookmark. If an order is valid, it processes it and advances its bookmark manually. If a torn, unreadable JSON slip ("poison pill") arrives, it quarantines it into orders.DLT with diagnostic headers so healthy orders behind it keep moving.',
+                guardrail: 'enable.auto.commit=false, per-record commitSync(offset + 1), ConsumerRebalanceListener latch, and .DLT error headers.'
+            },
+            {
+                id: 'wiremock',
+                step: '04',
+                title: 'Downstream Microservices',
+                subtitle: 'Payment & Inventory',
+                layer: 'WireMock 3.13.2 Chaos Engine',
+                layerStyle: 'bg-amber-100 text-amber-800 dark:bg-amber-500/20 dark:text-amber-300',
+                javaClass: 'com.resilience.lab.tests.PaymentTemporalFaultInjectionTest',
+                layman: 'Simulates real downstream HTTP Payment and Inventory APIs on a dynamic local port. Uses stateful scenarios (STARTED → CHARGED) to inject pre-commit 503s, post-commit TCP socket resets, 409 Out-of-Stock rejections, and Netflix ChAP latency spikes.',
+                guardrail: 'Idempotency-Key ledger replay, Fault.CONNECTION_RESET_BY_PEER, 409 Saga refund, and 150ms vs 1400ms latency tests.'
+            },
+            {
+                id: 'testng',
+                step: '05',
+                title: 'Verification Layer',
+                subtitle: 'TestNG + Awaitility',
+                layer: 'Automated Proof',
+                layerStyle: 'bg-indigo-100 text-indigo-800 dark:bg-indigo-500/20 dark:text-indigo-300',
+                javaClass: 'KafkaObservabilityTest + PaymentTemporalFaultInjectionTest',
+                layman: 'Replaces staring at scrolling terminal windows with deterministic pass/fail assertions. Awaitility polls real broker state (no flaky Thread.sleep), while WireMock ServeEvent inspection proves the payment ledger never exceeded 1 commit.',
+                guardrail: '7 automated TestNG tests asserting partition stickiness, lag=0, DLT headers, countLedgerCommits()==1, and Saga events.'
+            }
+        ];
+
+        /* =====================================================================
+         * 2. ALL 7 INTERACTIVE CHAOS LAB SCENARIOS
+         * ===================================================================*/
+        const SCENARIOS = [
+            {
+                id: 1,
+                group: 'A',
+                tabLabel: '1. Partition Stickiness',
+                title: 'Partition Key Stickiness (cust-42 → Partition 2)',
+                method: 'KafkaObservabilityTest.testPartitionKeyStickinessAndOffsetOrdering',
+                takeaway: 'Kafka only guarantees ordering within a single partition. Keying by customerId="cust-42" ensures all 5 order events hash to Partition 2 with strictly ascending offsets (0..4).',
+                assertions: [
+                    { id: 'a1', text: 'Topic provisioned with 3 partitions' },
+                    { id: 'a2', text: 'All 5 cust-42 events routed to Partition 2' },
+                    { id: 'a3', text: 'Offsets strictly ascending (0 → 4)' }
+                ],
+                steps: [
+                    {
+                        banner: 'TopicAdminHelper creates 3-partition topic orders-ordering-ba12ad3b on Docker Kafka (:9092).',
+                        active: ['kafka'],
+                        logs: [{ lvl: 'INFO', cls: 'TopicAdminHelper', msg: "Created topic 'orders-ordering-ba12ad3b' with 3 partitions" }],
+                        pass: ['a1']
+                    },
+                    {
+                        banner: 'ResilientProducerHandler sends evt-ord-1..2 (key=cust-42) with acks=all → hashed to Partition 2.',
+                        active: ['producer', 'kafka'],
+                        producer: 'key=cust-42 | evt-ord-1..2 (PLACED)',
+                        offsets: [{ p: 2, txt: '0:cust-42' }, { p: 2, txt: '1:cust-42' }],
+                        metrics: { lag: 2 },
+                        logs: [
+                            { lvl: 'INFO', cls: 'ResilientProducerHandler', msg: 'Produced -> topic=orders-ordering-ba12ad3b partition=2 offset=0 key=cust-42' },
+                            { lvl: 'INFO', cls: 'ResilientProducerHandler', msg: 'Produced -> topic=orders-ordering-ba12ad3b partition=2 offset=1 key=cust-42' }
+                        ]
+                    },
+                    {
+                        banner: 'Remaining 3 events (evt-ord-3..5) also land on Partition 2 at offsets 2, 3, 4. TestNG verifies strict ordering.',
+                        active: ['producer', 'kafka'],
+                        producer: 'key=cust-42 | evt-ord-5 ($249.95 PLACED)',
+                        offsets: [{ p: 2, txt: '2:cust-42' }, { p: 2, txt: '3:cust-42' }, { p: 2, txt: '4:cust-42' }],
+                        metrics: { lag: 5 },
+                        logs: [
+                            { lvl: 'INFO', cls: 'ResilientProducerHandler', msg: 'Produced -> partition=2 offset=2,3,4 key=cust-42' },
+                            { lvl: 'INFO', cls: 'TestNG', msg: 'PASS: All 5 cust-42 records pinned to Partition 2 with offsets 0..4' }
+                        ],
+                        pass: ['a2', 'a3']
+                    }
+                ]
+            },
+            {
+                id: 2,
+                group: 'A',
+                tabLabel: '2. Lag = 0 & Dedup',
+                title: 'Consumer Lag Draining to 0 & event_id Deduplication',
+                method: 'KafkaObservabilityTest.testConsumerLagDrainsToZeroAndDeduplicatesEvents',
+                takeaway: 'Because Kafka provides at-least-once delivery, consumers must deduplicate by eventId. Manual commitSync() advances offsets only after work finishes so Admin lag drains cleanly to 0.',
+                assertions: [
+                    { id: 'a1', text: '3 events sent (including duplicate evt-dup-1)' },
+                    { id: 'a2', text: 'Duplicate evt-dup-1 skipped (processedOrders == 2)' },
+                    { id: 'a3', text: 'Awaitility verifies Consumer Group Lag == 0' }
+                ],
+                steps: [
+                    {
+                        banner: 'Producer writes 3 records (evt-dup-1, duplicate evt-dup-1, evt-unique-2) → Consumer Lag = 3.',
+                        active: ['producer', 'kafka'],
+                        producer: '3 events: evt-dup-1, evt-dup-1 (DUP), evt-unique-2',
+                        offsets: [{ p: 1, txt: '0:dup-1' }, { p: 1, txt: '1:dup-1*' }, { p: 1, txt: '2:uniq-2' }],
+                        metrics: { lag: 3 },
+                        logs: [
+                            { lvl: 'INFO', cls: 'TopicAdminHelper', msg: "Created topic 'orders-dedup-c5b5d69d' with 3 partitions" },
+                            { lvl: 'INFO', cls: 'ResilientProducerHandler', msg: 'Produced 3 records (1 duplicate eventId) to partition=1' }
+                        ],
+                        pass: ['a1']
+                    },
+                    {
+                        banner: 'Consumer processes offset 0 (evt-dup-1), then blocks duplicate offset 1 via seenEventIds cache.',
+                        active: ['kafka', 'consumer'],
+                        consumerBadge: 'DUP BLOCKED',
+                        dedup: ['evt-dup-1'],
+                        commitNote: 'commitSync(offset=2)',
+                        metrics: { lag: 1 },
+                        logs: [
+                            { lvl: 'INFO', cls: 'ManualCommitConsumerHandler', msg: 'Processed evt-dup-1 (offset=0) -> commitSync(1)' },
+                            { lvl: 'WARN', cls: 'ManualCommitConsumerHandler', msg: 'Duplicate evt-dup-1 detected in seenEventIds -> skipped, commitSync(2)' }
+                        ],
+                        pass: ['a2']
+                    },
+                    {
+                        banner: 'Consumer processes offset 2 (evt-unique-2) and commits offset 3 → Awaitility confirms Lag == 0.',
+                        active: ['consumer', 'kafka'],
+                        consumerBadge: 'LAG = 0',
+                        dedup: ['evt-unique-2'],
+                        commitNote: 'commitSync(offset=3) · lag=0',
+                        metrics: { lag: 0 },
+                        logs: [
+                            { lvl: 'INFO', cls: 'ManualCommitConsumerHandler', msg: 'Processed evt-unique-2 (offset=2) -> commitSync(3)' },
+                            { lvl: 'INFO', cls: 'TestNG', msg: 'PASS: processedOrders.size()==2 AND getConsumerGroupLag()==0' }
+                        ],
+                        pass: ['a3']
+                    }
+                ]
+            },
+            {
+                id: 3,
+                group: 'A',
+                tabLabel: '3. Poison-Pill DLT',
+                title: 'Poison-Pill Quarantine to Dead-Letter Topic (.DLT)',
+                method: 'KafkaObservabilityTest.testPoisonPillIsolatedToDeadLetterTopic',
+                takeaway: 'One corrupted payload must never stall a partition. DeadLetterHandler routes malformed JSON to orders.DLT with diagnostic headers while valid offsets 0 and 2 succeed.',
+                assertions: [
+                    { id: 'a1', text: 'Valid offset 0 (evt-ok-1) processed' },
+                    { id: 'a2', text: 'Offset 1 routed to .DLT with JsonParseException header' },
+                    { id: 'a3', text: 'Valid offset 2 (evt-ok-2) unblocked & committed' }
+                ],
+                steps: [
+                    {
+                        banner: 'Producer publishes evt-ok-1, "{corrupted-json-poison-pill", and evt-ok-2 onto Partition 0.',
+                        active: ['producer', 'kafka'],
+                        producer: 'offset 1 = "{corrupted-json-poison-pill"',
+                        offsets: [{ p: 0, txt: '0:ok-1' }, { p: 0, txt: '1:POISON', bad: true }, { p: 0, txt: '2:ok-2' }],
+                        metrics: { lag: 3 },
+                        logs: [
+                            { lvl: 'INFO', cls: 'TopicAdminHelper', msg: "Created 'orders-dlt-93e82e77' & 'orders-dlt-93e82e77.DLT'" },
+                            { lvl: 'INFO', cls: 'ResilientProducerHandler', msg: 'Produced offsets 0 (valid), 1 (corrupted JSON), 2 (valid)' }
+                        ]
+                    },
+                    {
+                        banner: 'Offset 0 succeeds; offset 1 throws JsonParseException → DeadLetterHandler quarantines to .DLT!',
+                        active: ['consumer', 'kafka'],
+                        consumerBadge: 'DLT ROUTED',
+                        dedup: ['evt-ok-1'],
+                        dltText: '.DLT: 1 (JsonParse)',
+                        commitNote: 'commitSync(offset=2)',
+                        metrics: { lag: 1, dlt: 1 },
+                        logs: [
+                            { lvl: 'INFO', cls: 'ManualCommitConsumerHandler', msg: 'Processed valid OrderEvent evt-ok-1 (offset=0)' },
+                            { lvl: 'WARN', cls: 'DeadLetterHandler', msg: 'Routed poison pill from orders-dlt-93e82e77:0@1 to orders-dlt-93e82e77.DLT (JsonParseException)' }
+                        ],
+                        pass: ['a1', 'a2']
+                    },
+                    {
+                        banner: 'Lane unblocked! Consumer processes offset 2 (evt-ok-2) → 2 valid orders, 1 DLT record with headers.',
+                        active: ['consumer'],
+                        consumerBadge: '2 OK · 1 DLT',
+                        dedup: ['evt-ok-2'],
+                        commitNote: 'commitSync(offset=3) · lag=0',
+                        metrics: { lag: 0, dlt: 1 },
+                        logs: [
+                            { lvl: 'INFO', cls: 'ManualCommitConsumerHandler', msg: 'Processed valid OrderEvent evt-ok-2 (offset=2) -> lag=0' },
+                            { lvl: 'INFO', cls: 'TestNG', msg: 'PASS: validOrders=2, dltRecords=1, header dlt-error-class=JsonParseException' }
+                        ],
+                        pass: ['a3']
+                    }
+                ]
+            },
+            {
+                id: 4,
+                group: 'B',
+                tabLabel: '4. Window 1: 503 Retry',
+                title: 'Window 1: Pre-Effect HTTP 503 → Plain Retry → 1 Ledger Commit',
+                method: 'PaymentTemporalFaultInjectionTest.testWindow1_FailureBeforeSideEffect_PlainRetrySucceedsOnce',
+                takeaway: 'SequenceFI Window 1: When a failure happens BEFORE the payment ledger commits, a plain retry with the same Idempotency-Key safely completes with exactly 1 ledger commit.',
+                assertions: [
+                    { id: 'a1', text: 'Attempt 1 returns HTTP 503 (Ledger == 0)' },
+                    { id: 'a2', text: 'Attempt 2 commits charge (Ledger == 1)' },
+                    { id: 'a3', text: '2 HTTP charge calls, Inventory 200 OK, COMPLETED' }
+                ],
+                steps: [
+                    {
+                        banner: 'Attempt 1 hits /payments/charge → WireMock injects pre-commit HTTP 503 (Ledger stays 0).',
+                        active: ['consumer', 'wiremock'],
+                        consumerBadge: 'RETRYING',
+                        dedup: ['evt-window1-101'],
+                        wmState: 'READY_FOR_RETRY',
+                        paymentText: 'HTTP 503 Service Unavailable (0 commits)',
+                        metrics: { http: 1, ledger: 0 },
+                        logs: [
+                            { lvl: 'INFO', cls: 'OrderService', msg: 'POST /payments/charge [Attempt 1] Idempotency-Key=evt-window1-101' },
+                            { lvl: 'WARN', cls: 'WireMockServer', msg: 'Stub [charge-pre-effect-abort] returned 503 -> Scenario: READY_FOR_RETRY' }
+                        ],
+                        pass: ['a1']
+                    },
+                    {
+                        banner: 'Attempt 2 retries with Idempotency-Key=evt-window1-101 → Payment commits Ledger (#1).',
+                        active: ['consumer', 'wiremock'],
+                        consumerBadge: 'CHARGED',
+                        wmState: 'CHARGED',
+                        paymentText: 'HTTP 200 OK {"status":"CHARGED"} (Ledger #1)',
+                        metrics: { http: 2, ledger: 1 },
+                        logs: [
+                            { lvl: 'INFO', cls: 'OrderService', msg: 'POST /payments/charge [Attempt 2] Idempotency-Key=evt-window1-101' },
+                            { lvl: 'INFO', cls: 'WireMockServer', msg: 'Stub [charge-commit] committed ledger (#1) -> HTTP 200 OK' }
+                        ],
+                        pass: ['a2']
+                    },
+                    {
+                        banner: 'Inventory reserves stock (HTTP 200) → TestNG confirms COMPLETED with 1 ledger commit.',
+                        active: ['wiremock', 'consumer'],
+                        consumerBadge: 'COMPLETED',
+                        wmState: 'CHARGED',
+                        inventoryText: 'HTTP 200 OK (ord-101 reserved)',
+                        metrics: { http: 3, ledger: 1 },
+                        logs: [
+                            { lvl: 'INFO', cls: 'WireMockServer', msg: 'POST /inventory/reserve -> HTTP 200 OK' },
+                            { lvl: 'INFO', cls: 'TestNG', msg: 'PASS: Window 1 -> chargeCalls=2, countLedgerCommits()==1, COMPLETED' }
+                        ],
+                        pass: ['a3']
+                    }
+                ]
+            },
+            {
+                id: 5,
+                group: 'B',
+                tabLabel: '5. Window 2: Reset Replay',
+                title: 'Window 2: Post-Effect Socket Reset → Idempotency-Key Replay + Dedup',
+                method: 'PaymentTemporalFaultInjectionTest.testWindow2_FailureAfterCommitReplyLost_IdempotentRetryAndConsumerDedup',
+                takeaway: 'SequenceFI Window 2: Payment commits FIRST, then drops TCP before the receipt returns. Idempotency-Key replays the receipt without double-billing, and consumer dedup blocks Kafka redelivery.',
+                assertions: [
+                    { id: 'a1', text: 'Attempt 1 commits Ledger=1 then CONNECTION_RESET' },
+                    { id: 'a2', text: 'Attempt 2 replays receipt (Ledger stays 1)' },
+                    { id: 'a3', text: 'Duplicate Kafka delivery blocked at consumer' }
+                ],
+                steps: [
+                    {
+                        banner: 'Attempt 1 commits Payment Ledger (#1), then WireMock drops socket (CONNECTION_RESET_BY_PEER)!',
+                        active: ['consumer', 'wiremock'],
+                        consumerBadge: 'IOException',
+                        dedup: ['evt-window2-202'],
+                        wmState: 'CHARGED',
+                        paymentText: 'FAULT: CONNECTION_RESET (Ledger #1 committed!)',
+                        metrics: { http: 1, ledger: 1 },
+                        logs: [
+                            { lvl: 'INFO', cls: 'WireMockServer', msg: 'Stub [charge-commit] committed ledger (#1) -> Scenario: CHARGED' },
+                            { lvl: 'WARN', cls: 'WireMockServer', msg: 'Injected Fault.CONNECTION_RESET_BY_PEER — reply lost in transit!' }
+                        ],
+                        pass: ['a1']
+                    },
+                    {
+                        banner: 'Attempt 2 retries with SAME Idempotency-Key → WireMock replays saved receipt (NO 2nd charge).',
+                        active: ['consumer', 'wiremock'],
+                        consumerBadge: 'REPLAYED',
+                        wmState: 'CHARGED',
+                        paymentText: '200 OK REPLAYED_FROM_LEDGER (Ledger=1)',
+                        inventoryText: 'HTTP 200 OK (ord-202 reserved)',
+                        metrics: { http: 3, ledger: 1 },
+                        logs: [
+                            { lvl: 'INFO', cls: 'OrderService', msg: 'Retry [Attempt 2] Idempotency-Key=evt-window2-202 -> 200 REPLAYED_FROM_LEDGER' },
+                            { lvl: 'INFO', cls: 'WireMockServer', msg: 'POST /inventory/reserve -> 200 OK (Order COMPLETED)' }
+                        ],
+                        pass: ['a2']
+                    },
+                    {
+                        banner: 'Duplicate Kafka event evt-window2-202 arrives → blocked by processedEventIds (0 extra HTTP calls).',
+                        active: ['consumer'],
+                        consumerBadge: 'DUP IGNORED',
+                        metrics: { http: 3, ledger: 1 },
+                        logs: [
+                            { lvl: 'WARN', cls: 'OrderService', msg: 'Duplicate delivery evt-window2-202 -> DUPLICATE_EVENT_IGNORED' },
+                            { lvl: 'INFO', cls: 'TestNG', msg: 'PASS: Window 2 -> chargeCalls=2, countLedgerCommits()==1 (Zero double-charge)' }
+                        ],
+                        pass: ['a3']
+                    }
+                ]
+            },
+            {
+                id: 6,
+                group: 'B',
+                tabLabel: '6. Window 3: 409 Saga',
+                title: 'Window 3: Inventory HTTP 409 → No Retry → Saga Refund & Compensation',
+                method: 'PaymentTemporalFaultInjectionTest.testWindow3_DownstreamRejectionAfterCharge_SagaCompensatesWithoutRetryingRejection',
+                takeaway: 'SequenceFI Window 3: Business rejections (409 Out-of-Stock) are deterministic—never retry them. Trigger an idempotent Saga refund and emit orders-compensated.',
+                assertions: [
+                    { id: 'a1', text: 'Payment succeeds (Ledger == 1)' },
+                    { id: 'a2', text: 'Inventory 409 NOT retried (reserve calls == 1)' },
+                    { id: 'a3', text: 'Saga /payments/refund called + orders-compensated emitted' }
+                ],
+                steps: [
+                    {
+                        banner: 'Payment Service charges card cleanly (HTTP 200, Ledger #1).',
+                        active: ['consumer', 'wiremock'],
+                        consumerBadge: 'CHARGED',
+                        dedup: ['evt-window3-303'],
+                        wmState: 'CHARGED',
+                        paymentText: 'HTTP 200 OK {"status":"CHARGED"} (Ledger #1)',
+                        metrics: { http: 1, ledger: 1 },
+                        logs: [
+                            { lvl: 'INFO', cls: 'WireMockServer', msg: 'POST /payments/charge -> 200 OK (Ledger #1 committed)' }
+                        ],
+                        pass: ['a1']
+                    },
+                    {
+                        banner: 'Inventory rejects with HTTP 409 OUT_OF_STOCK → Consumer stops retrying and starts Saga rollback.',
+                        active: ['wiremock', 'consumer'],
+                        consumerBadge: '409 SAGA',
+                        inventoryText: 'HTTP 409 OUT_OF_STOCK (1 call, NO retry)',
+                        metrics: { http: 2, ledger: 1 },
+                        logs: [
+                            { lvl: 'WARN', cls: 'WireMockServer', msg: 'POST /inventory/reserve -> HTTP 409 {"error":"OUT_OF_STOCK"}' },
+                            { lvl: 'WARN', cls: 'OrderService', msg: 'Deterministic 409 rejection -> aborting retries, initiating Saga refund' }
+                        ],
+                        pass: ['a2']
+                    },
+                    {
+                        banner: 'Saga calls /payments/refund (key: evt-window3-303-refund) & emits orders-compensated event.',
+                        active: ['wiremock', 'kafka', 'consumer'],
+                        consumerBadge: 'COMPENSATED',
+                        wmState: 'REFUNDED',
+                        paymentText: 'POST /payments/refund -> 200 REFUNDED',
+                        compText: 'Saga: 1 (409)',
+                        metrics: { http: 3, ledger: 1 },
+                        logs: [
+                            { lvl: 'INFO', cls: 'OrderService', msg: 'POST /payments/refund Idempotency-Key=evt-window3-303-refund -> 200 REFUNDED' },
+                            { lvl: 'INFO', cls: 'TestNG', msg: 'PASS: Window 3 -> COMPENSATED, inventoryCalls=1, refundCalls=1, orders-compensated=1' }
+                        ],
+                        pass: ['a3']
+                    }
+                ]
+            },
+            {
+                id: 7,
+                group: 'B',
+                tabLabel: '7. Netflix ChAP Latency',
+                title: 'Netflix ChAP Latency Boundaries: 150ms vs 1400ms (Timeout = 1000ms)',
+                method: 'PaymentTemporalFaultInjectionTest.testNetflixLatencyVariants_UnderAndOverClientTimeout',
+                takeaway: 'Inspired by Netflix ChAP (arXiv:1905.04648): Healthy 150ms latency never triggers unnecessary retries, while a 1400ms timeout breach replays safely with 1 ledger commit.',
+                showLatency: true,
+                assertions: [
+                    { id: 'a1', text: 'Variant A (150ms < 1000ms): 1 call, 0 retries' },
+                    { id: 'a2', text: 'Variant B (1400ms > 1000ms): client times out while server commits' },
+                    { id: 'a3', text: 'Attempt 2 idempotent replay keeps Ledger == 1' }
+                ],
+                steps: [
+                    {
+                        banner: 'Variant A: WireMock delays 150ms (< 1000ms CLIENT_TIMEOUT) → completes in 1 call with zero retries.',
+                        active: ['consumer', 'wiremock'],
+                        consumerBadge: 'VAR A: OK',
+                        dedup: ['evt-latency-under-401'],
+                        wmState: 'STARTED',
+                        paymentText: 'Variant A: 200 OK (150ms delay · 1 call)',
+                        inventoryText: 'Reserved ord-401 (200 OK)',
+                        latA: { pct: 10, label: '150ms — COMPLETED (0 retries)' },
+                        metrics: { http: 2, ledger: 1 },
+                        logs: [
+                            { lvl: 'INFO', cls: 'WireMockServer', msg: '[Variant A] Fixed delay 150ms (< 1000ms timeout) -> 200 OK, Ledger=1' },
+                            { lvl: 'INFO', cls: 'TestNG', msg: 'Verified Variant A: exactly 1 charge call, Ledger=1' }
+                        ],
+                        pass: ['a1']
+                    },
+                    {
+                        banner: 'WireMock resets → Variant B injects 1400ms delay! Client times out at 1000ms while slow server commits.',
+                        active: ['consumer', 'wiremock'],
+                        consumerBadge: 'TIMEOUT @ 1s',
+                        dedup: ['evt-latency-over-402'],
+                        wmState: 'CHARGED',
+                        paymentText: 'Variant B: 1400ms delay → Client Timeout @ 1000ms!',
+                        latB: { pct: 93, label: '1400ms — TIMEOUT @ 1000ms (Server Committed!)' },
+                        metrics: { http: 3, ledger: 1 },
+                        logs: [
+                            { lvl: 'WARN', cls: 'OrderService', msg: '[Variant B] HttpTimeoutException at 1000ms -> 500ms backoff before retry' },
+                            { lvl: 'INFO', cls: 'WireMockServer', msg: '[Variant B] Slow server finished write at 1400ms -> Ledger #1 committed (CHARGED)' }
+                        ],
+                        pass: ['a2']
+                    },
+                    {
+                        banner: 'Variant B Attempt 2 retries with SAME Idempotency-Key → 20ms replay, Ledger stays strictly 1!',
+                        active: ['consumer', 'wiremock'],
+                        consumerBadge: 'VAR B: SAFE',
+                        wmState: 'CHARGED',
+                        paymentText: 'Attempt 2: 200 OK Replay (20ms · Ledger=1)',
+                        inventoryText: 'Reserved ord-402 (200 OK)',
+                        metrics: { http: 5, ledger: 1 },
+                        logs: [
+                            { lvl: 'INFO', cls: 'OrderService', msg: '[Variant B] Attempt 2 Idempotency-Key=evt-latency-over-402 -> 200 OK (20ms replay)' },
+                            { lvl: 'INFO', cls: 'TestNG', msg: 'PASS: Netflix ChAP Latency Variants -> Both variants kept Ledger strictly == 1' }
+                        ],
+                        pass: ['a3']
+                    }
+                ]
+            }
+        ];
+
+        /* =====================================================================
+         * 3. STATE MANAGEMENT
+         * ===================================================================*/
+        let selectedArchNodeId = 'producer';
+        let activeScenarioId = 1;
+        let currentStepIdx = 0;
+        let playTimer = null;
+        let partitionBuckets = { 0: [], 1: [], 2: [] };
+        let dedupItems = [];
+        let passedAssertions = new Set();
+        let plainLogLines = [];
+
+        /* =====================================================================
+         * 4. THEME & MOBILE NAVIGATION HANDLERS
+         * ===================================================================*/
+        function toggleTheme() {
+            const html = document.documentElement;
+            const isDark = html.classList.toggle('dark');
+            syncThemeIcons(isDark);
+        }
+
+        function syncThemeIcons(isDark) {
+            document.getElementById('sunIcon').classList.toggle('hidden', !isDark);
+            document.getElementById('moonIcon').classList.toggle('hidden', isDark);
+        }
+
+        function toggleMobileMenu() {
+            document.getElementById('mobileMenu').classList.toggle('hidden');
+        }
+
+        function closeMobileMenu() {
+            document.getElementById('mobileMenu').classList.add('hidden');
+        }
+
+        /* =====================================================================
+         * 5. ARCHITECTURE FLOW RENDERING & INSPECTOR
+         * ===================================================================*/
+        function renderArchitectureNodes() {
+            const grid = document.getElementById('archNodeGrid');
+            grid.innerHTML = '';
+
+            ARCH_NODES.forEach((node, idx) => {
+                const isSelected = node.id === selectedArchNodeId;
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.onclick = () => selectArchNode(node.id);
+                btn.className = `text-left rounded-2xl p-4 border transition-all duration-200 cursor-pointer flex flex-col justify-between gap-2 ${
+                    isSelected
+                        ? 'bg-indigo-50/90 dark:bg-indigo-500/15 border-indigo-500 ring-2 ring-indigo-500/30 shadow-sm'
+                        : 'bg-slate-50 dark:bg-slate-950/70 border-slate-200 dark:border-slate-800 hover:border-indigo-300 dark:hover:border-indigo-500/50'
+                }`;
+                btn.innerHTML = `
+                    <div class="flex items-center justify-between gap-2">
+                        <span class="text-[11px] font-mono font-bold ${isSelected ? 'text-indigo-600 dark:text-indigo-300' : 'text-slate-400'}">${node.step}</span>
+                        ${idx < ARCH_NODES.length - 1 ? '<span class="hidden md:inline text-slate-400 text-xs font-bold">→</span>' : '<span class="text-emerald-500 text-xs font-bold">✓</span>'}
+                    </div>
+                    <div>
+                        <div class="text-sm font-bold text-slate-900 dark:text-white">${node.title}</div>
+                        <div class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">${node.subtitle}</div>
+                    </div>
+                `;
+                grid.appendChild(btn);
+            });
+
+            updateArchitectureInspector();
+        }
+
+        function selectArchNode(id) {
+            selectedArchNodeId = id;
+            renderArchitectureNodes();
+        }
+
+        function updateArchitectureInspector() {
+            const node = ARCH_NODES.find(n => n.id === selectedArchNodeId);
+            if (!node) return;
+            const badge = document.getElementById('inspLayerBadge');
+            badge.textContent = node.layer;
+            badge.className = `px-2.5 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-wider ${node.layerStyle}`;
+            document.getElementById('inspClassName').textContent = node.javaClass;
+            document.getElementById('inspTitle').textContent = `${node.step}. ${node.title}`;
+            document.getElementById('inspLayman').textContent = node.layman;
+            document.getElementById('inspGuardrail').textContent = node.guardrail;
+        }
+
+        /* =====================================================================
+         * 6. CHAOS LAB SCENARIO TABS & SIMULATION ENGINE
+         * ===================================================================*/
+        function renderScenarioTabs() {
+            const groupA = document.getElementById('simTabsGroupA');
+            const groupB = document.getElementById('simTabsGroupB');
+            groupA.innerHTML = '';
+            groupB.innerHTML = '';
+
+            SCENARIOS.forEach(sc => {
+                const isActive = sc.id === activeScenarioId;
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.onclick = () => selectScenario(sc.id);
+                btn.textContent = sc.tabLabel;
+                btn.className = `px-3.5 py-2 rounded-xl text-xs font-semibold border transition-all cursor-pointer ${
+                    isActive
+                        ? 'bg-indigo-600 text-white border-indigo-600 dark:bg-indigo-500 dark:border-indigo-500 shadow-sm'
+                        : 'bg-white dark:bg-slate-800/80 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:border-indigo-300 dark:hover:border-indigo-500/50'
+                }`;
+                (sc.group === 'A' ? groupA : groupB).appendChild(btn);
+            });
+        }
+
+        function getActiveScenario() {
+            return SCENARIOS.find(s => s.id === activeScenarioId);
+        }
+
+        function selectScenario(id) {
+            activeScenarioId = id;
+            renderScenarioTabs();
+            resetSimulator(true);
+
+            const sc = getActiveScenario();
+            document.getElementById('simBadge').textContent = `SCENARIO ${sc.id}`;
+            document.getElementById('simTitle').textContent = sc.title;
+            document.getElementById('simSubtitle').textContent = sc.method + '()';
+            document.getElementById('simTakeaway').textContent = sc.takeaway;
+            document.getElementById('latencyGaugeBox').classList.toggle('hidden', !sc.showLatency);
+
+            renderSimAssertions();
+            updateProgressUI();
+        }
+
+        function playScenario() {
+            resetSimulator(false);
+            clearSimConsole();
+            const sc = getActiveScenario();
+            appendSimLog('INFO', 'TestNG', `Starting ${sc.method}()`);
+            document.getElementById('playBtnLabel').textContent = 'Playing...';
+            runNextAutoStep();
+        }
+
+        function runNextAutoStep() {
+            const sc = getActiveScenario();
+            if (currentStepIdx >= sc.steps.length) {
+                completeScenario();
+                return;
+            }
+            applySimStep(sc.steps[currentStepIdx]);
+            currentStepIdx++;
+            updateProgressUI();
+
+            if (currentStepIdx < sc.steps.length) {
+                playTimer = setTimeout(runNextAutoStep, 1250);
+            } else {
+                playTimer = setTimeout(completeScenario, 400);
+            }
+        }
+
+        function stepScenario() {
+            if (playTimer) {
+                clearTimeout(playTimer);
+                playTimer = null;
+            }
+            const sc = getActiveScenario();
+            if (currentStepIdx === 0) {
+                clearSimConsole();
+                appendSimLog('INFO', 'TestNG', `Stepping through ${sc.method}()`);
+            } else if (currentStepIdx >= sc.steps.length) {
+                resetSimulator(false);
+                clearSimConsole();
+                appendSimLog('INFO', 'TestNG', `Replaying ${sc.method}()`);
+            }
+            applySimStep(sc.steps[currentStepIdx]);
+            currentStepIdx++;
+            updateProgressUI();
+
+            if (currentStepIdx >= sc.steps.length) {
+                completeScenario();
+            }
+        }
+
+        function completeScenario() {
+            playTimer = null;
+            document.getElementById('playBtnLabel').textContent = 'Replay';
+            document.getElementById('stepDot').className = 'w-2.5 h-2.5 rounded-full bg-emerald-500 shrink-0';
+            const badge = document.getElementById('simResultBadge');
+            badge.textContent = 'PASS (VERIFIED)';
+            badge.className = 'text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300';
+        }
+
+        function applySimStep(step) {
+            document.getElementById('stepBannerText').textContent = step.banner;
+            document.getElementById('stepDot').className = 'w-2.5 h-2.5 rounded-full bg-indigo-500 animate-pulse shrink-0';
+
+            // Highlight active pipeline cards
+            const stageMap = {
+                producer: 'stageProducer',
+                kafka: 'stageKafka',
+                consumer: 'stageConsumer',
+                wiremock: 'stageWiremock'
+            };
+            Object.values(stageMap).forEach(elId => {
+                const el = document.getElementById(elId);
+                el.classList.remove('ring-2', 'ring-indigo-500', 'border-indigo-400', 'dark:border-indigo-400', 'shadow-md');
+            });
+            (step.active || []).forEach(key => {
+                const el = document.getElementById(stageMap[key]);
+                if (el) {
+                    el.classList.add('ring-2', 'ring-indigo-500', 'border-indigo-400', 'dark:border-indigo-400', 'shadow-md');
+                }
+            });
+
+            if (step.producer) {
+                document.getElementById('stageProducerBody').textContent = step.producer;
+            }
+            if (step.offsets) {
+                step.offsets.forEach(item => partitionBuckets[item.p].push(item));
+                renderPartitionBuckets();
+            }
+            if (step.dltText) {
+                document.getElementById('boxDlt').textContent = step.dltText;
+            }
+            if (step.compText) {
+                document.getElementById('boxComp').textContent = step.compText;
+            }
+            if (step.consumerBadge) {
+                const cb = document.getElementById('stageConsumerBadge');
+                cb.textContent = step.consumerBadge;
+                cb.className = 'text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-700 dark:bg-indigo-500/20 dark:text-indigo-300';
+            }
+            if (step.dedup) {
+                step.dedup.forEach(id => {
+                    if (!dedupItems.includes(id)) dedupItems.push(id);
+                });
+                renderDedupBadges();
+            }
+            if (step.commitNote) {
+                document.getElementById('stageCommitNote').textContent = step.commitNote;
+            }
+            if (step.wmState) {
+                const ws = document.getElementById('stageWmState');
+                ws.textContent = step.wmState;
+                ws.className = 'text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-amber-100 text-amber-800 dark:bg-amber-500/20 dark:text-amber-300';
+            }
+            if (step.paymentText) {
+                document.getElementById('stagePaymentText').textContent = step.paymentText;
+            }
+            if (step.inventoryText) {
+                document.getElementById('stageInventoryText').textContent = step.inventoryText;
+            }
+            if (step.latA) {
+                document.getElementById('latFillA').style.width = `${step.latA.pct}%`;
+                document.getElementById('latTextA').textContent = step.latA.label;
+            }
+            if (step.latB) {
+                document.getElementById('latFillB').style.width = `${step.latB.pct}%`;
+                document.getElementById('latTextB').textContent = step.latB.label;
+            }
+            if (step.metrics) {
+                if (typeof step.metrics.ledger === 'number') document.getElementById('cntLedger').textContent = step.metrics.ledger;
+                if (typeof step.metrics.lag === 'number') document.getElementById('cntLag').textContent = step.metrics.lag;
+                if (typeof step.metrics.dlt === 'number') document.getElementById('cntDlt').textContent = step.metrics.dlt;
+                if (typeof step.metrics.http === 'number') document.getElementById('cntHttp').textContent = step.metrics.http;
+            }
+            if (step.pass) {
+                step.pass.forEach(id => passedAssertions.add(id));
+                renderSimAssertions();
+            }
+            if (step.logs) {
+                step.logs.forEach(l => appendSimLog(l.lvl, l.cls, l.msg));
+            }
+        }
+
+        function renderPartitionBuckets() {
+            [0, 1, 2].forEach(p => {
+                const lane = document.getElementById(`laneP${p}`);
+                const items = partitionBuckets[p];
+                if (!items.length) {
+                    lane.innerHTML = '—';
+                    return;
+                }
+                lane.innerHTML = items.map(item => {
+                    const color = item.bad
+                        ? 'bg-rose-100 text-rose-700 dark:bg-rose-500/20 dark:text-rose-300'
+                        : 'bg-cyan-100 text-cyan-800 dark:bg-cyan-500/20 dark:text-cyan-300';
+                    return `<span class="px-1.5 py-0.5 rounded ${color}">${item.txt}</span>`;
+                }).join('');
+            });
+        }
+
+        function renderDedupBadges() {
+            const box = document.getElementById('stageDedupList');
+            if (!dedupItems.length) {
+                box.innerHTML = 'empty []';
+                return;
+            }
+            box.innerHTML = dedupItems.map(id =>
+                `<span class="px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300">${id}</span>`
+            ).join('');
+        }
+
+        function renderSimAssertions() {
+            const sc = getActiveScenario();
+            const container = document.getElementById('simAssertions');
+            container.innerHTML = sc.assertions.map(a => {
+                const ok = passedAssertions.has(a.id);
+                return `
+                    <div class="flex items-center gap-2.5 rounded-xl px-3 py-2 border text-xs transition-colors ${
+                        ok
+                            ? 'bg-emerald-50 dark:bg-emerald-500/10 border-emerald-200 dark:border-emerald-500/30 text-emerald-800 dark:text-emerald-200 font-medium'
+                            : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-500 dark:text-slate-400'
+                    }">
+                        <span class="w-4 h-4 rounded-full flex items-center justify-center shrink-0 text-[10px] font-bold ${
+                            ok ? 'bg-emerald-500 text-white' : 'border border-slate-300 dark:border-slate-600'
+                        }">${ok ? '✓' : ''}</span>
+                        <span class="font-mono text-[11px]">${a.text}</span>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function updateProgressUI() {
+            const sc = getActiveScenario();
+            const total = sc.steps.length;
+            const pct = total ? Math.round((currentStepIdx / total) * 100) : 0;
+            document.getElementById('simProgressFill').style.width = `${pct}%`;
+            document.getElementById('stepCounter').textContent = `Step ${currentStepIdx} / ${total}`;
+        }
+
+        function resetSimulator(resetConsolePlaceholder) {
+            if (playTimer) {
+                clearTimeout(playTimer);
+                playTimer = null;
+            }
+            currentStepIdx = 0;
+            partitionBuckets = { 0: [], 1: [], 2: [] };
+            dedupItems = [];
+            passedAssertions = new Set();
+
+            ['stageProducer', 'stageKafka', 'stageConsumer', 'stageWiremock'].forEach(id => {
+                document.getElementById(id).classList.remove('ring-2', 'ring-indigo-500', 'border-indigo-400', 'dark:border-indigo-400', 'shadow-md');
+            });
+
+            document.getElementById('playBtnLabel').textContent = 'Play';
+            document.getElementById('stepDot').className = 'w-2.5 h-2.5 rounded-full bg-slate-400 shrink-0';
+            document.getElementById('stepBannerText').textContent = 'Press Play or Step to animate packet flow across Kafka & WireMock.';
+
+            ['cntLedger', 'cntLag', 'cntDlt', 'cntHttp'].forEach(id => {
+                document.getElementById(id).textContent = '0';
+            });
+
+            document.getElementById('stageProducerBody').textContent = 'Awaiting event publish...';
+            document.getElementById('boxDlt').textContent = '.DLT: empty';
+            document.getElementById('boxComp').textContent = 'Saga: 0';
+            document.getElementById('stageConsumerBadge').textContent = 'IDLE';
+            document.getElementById('stageConsumerBadge').className = 'text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-300';
+            document.getElementById('stageCommitNote').textContent = 'offset: —';
+            document.getElementById('stageWmState').textContent = 'STARTED';
+            document.getElementById('stageWmState').className = 'text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-300';
+            document.getElementById('stagePaymentText').textContent = 'Awaiting HTTP POST';
+            document.getElementById('stageInventoryText').textContent = 'Idle';
+            document.getElementById('latFillA').style.width = '0%';
+            document.getElementById('latTextA').textContent = 'Pending';
+            document.getElementById('latFillB').style.width = '0%';
+            document.getElementById('latTextB').textContent = 'Pending';
+
+            const badge = document.getElementById('simResultBadge');
+            badge.textContent = 'READY';
+            badge.className = 'text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400';
+
+            renderPartitionBuckets();
+            renderDedupBadges();
+            renderSimAssertions();
+            updateProgressUI();
+
+            if (resetConsolePlaceholder) {
+                plainLogLines = [];
+                document.getElementById('simConsole').innerHTML = '<div class="text-slate-500">// Clean Log4j 2 output will stream here (org.apache.kafka muted at WARN)...</div>';
+            }
+        }
+
+        /* =====================================================================
+         * 7. CONSOLE LOG STREAMER & IFRAME-SAFE CLIPBOARD COPY
+         * ===================================================================*/
+        function clearSimConsole() {
+            plainLogLines = [];
+            document.getElementById('simConsole').innerHTML = '';
+        }
+
+        function appendSimLog(level, logger, msg) {
+            const now = new Date();
+            const ts = now.toTimeString().split(' ')[0] + '.' + String(now.getMilliseconds()).padStart(3, '0');
+            const lvlClass = level === 'WARN' ? 'text-amber-400' : 'text-emerald-400';
+
+            plainLogLines.push(`${ts} ${level.padEnd(5)} [main] ${logger} - ${msg}`);
+
+            const row = document.createElement('div');
+            row.innerHTML = `<span class="text-slate-500">${ts}</span> <span class="${lvlClass} font-bold">${level.padEnd(5)}</span> <span class="text-cyan-400">${escapeHtml(logger)}</span> <span class="text-slate-500">-</span> <span class="text-slate-200">${escapeHtml(msg)}</span>`;
+
+            const consoleEl = document.getElementById('simConsole');
+            consoleEl.appendChild(row);
+            consoleEl.scrollTop = consoleEl.scrollHeight;
+        }
+
+        function escapeHtml(text) {
+            return String(text)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;');
+        }
+
+        function copyConsoleOutput() {
+            const payload = plainLogLines.length ? plainLogLines.join('\n') : '// Run a scenario first to capture Log4j 2 output.';
+            const textarea = document.createElement('textarea');
+            textarea.value = payload;
+            textarea.style.position = 'fixed';
+            textarea.style.opacity = '0';
+            document.body.appendChild(textarea);
+            textarea.select();
+            try {
+                document.execCommand('copy');
+                showToast('Copied Log4j 2 console output');
+            } catch (err) {
+                showToast('Clipboard copy unavailable');
+            } finally {
+                document.body.removeChild(textarea);
+            }
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toastBanner');
+            toast.textContent = message;
+            toast.classList.remove('hidden');
+            setTimeout(() => toast.classList.add('hidden'), 2200);
+        }
+
+        /* =====================================================================
+         * 8. INITIALIZE DASHBOARD ON LOAD
+         * ===================================================================*/
+        window.onload = function () {
+            try {
+                syncThemeIcons(document.documentElement.classList.contains('dark'));
+                renderArchitectureNodes();
+                selectScenario(1);
+            } catch (error) {
+                console.error('Initialization error:', error);
+            }
+        };
+    </script>
+</body>
+</html>
