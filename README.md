@@ -119,7 +119,7 @@ mvn test -Dtest=PaymentTemporalFaultInjectionTest
 
 ### 2. Start Local Apache Kafka (KRaft Mode via Docker)
 ```bash
-docker run -d --name kafka -p 9092:9092 apache/kafka:latest
+docker run -d --name kafka -p 9092:9092 apache/kafka:4.4.0
 ```
 
 ### 3. Run the Full 7-Test Suite (Live Kafka + WireMock)

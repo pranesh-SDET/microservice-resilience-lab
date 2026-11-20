@@ -12,7 +12,7 @@ jobs:
 
     services:
       kafka:
-        image: apache/kafka:latest
+        image: apache/kafka:4.4.0
         ports:
           - 9092:9092
 
@@ -27,10 +27,11 @@ jobs:
           distribution: 'temurin'
           cache: 'maven'
 
-      - name: Wait for Kafka broker on port 9092
+      - name: Wait until the Kafka broker answers
         run: |
+          CID=$(docker ps -q --filter ancestor=apache/kafka:4.4.0)
           for i in {1..30}; do
-            if nc -z localhost 9092; then
+            if docker exec "$CID" /opt/kafka/bin/kafka-topics.sh --bootstrap-server localhost:9092 --list >/dev/null 2>&1; then
               echo "Kafka is ready!"
               exit 0
             fi
@@ -38,6 +39,7 @@ jobs:
             sleep 2
           done
           echo "Kafka did not start in time"
+          docker logs "$CID" | tail -50
           exit 1
 
       - name: Run full TestNG suite (Kafka + WireMock)
